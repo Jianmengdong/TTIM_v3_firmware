@@ -1,0 +1,48 @@
+* RegName        RegAddr         RegMask       R   W     Description
+test_mode          0x41        ffffffffffff    1   1
+channel_mask       0x42        ffffffffffff    1   1
+tx2_en             0x43        ffffffffffff    1   1
+tx1_sel            0x44        ffffffffffff    1   1
+invert_tx1         0x45        ffffffffffff    1   1
+tap_cnt            0x46        ffffffffffff    1   1
+channel_sel        0x47        ffffffffffff    1   1
+load_tap           0x48        ffffffffffff    1   1
+inject_reset       0x49        ffffffffffff    1   1    B3 for ptp_enable
+pair_swap          0x4A        ffffffffffff    1   1
+en_trig_src        0x4B        ffffffffffff    1   1
+
+system_status      0x4C        ffffffffffff    1   0
+ttc_rst_error      0x4C        ffffffffffff    0   1    B2
+ttc_idle           0x4C        ffffffffffff    0   1    B1
+chb_req            0x4C        ffffffffffff    0   1    B0
+
+channel_rdy        0x4D        ffffffffffff    1   0
+tap_incr           0x4D        ffffffffffff    0   1    B1
+tap_rst            0x4D        ffffffffffff    0   1    B0
+
+error_time1        0x4E        ffffffffffff    1   0
+l1a_go_prbs        0x4E        ffffffffffff    0   1
+
+error_time2        0x4F        ffffffffffff    1   0
+calib_enable       0x4F        ffffffffffff    0   1
+
+error_cnt1         0x50        ffffffffffff    1   0
+manual_trig        0x50        ffffffffffff    0   1
+
+error_cnt2         0x51        ffffffffffff    1   0
+sma_sel            0x51        ffffffffffff    0   1
+hit_toggle         0x52        ffffffffffff    1   1
+sbit_error_cnt     0x53        ffffffffffff    1   0
+gen_fake_nhit      0x53        ffffffffffff    0   1
+
+dbit_error_cnt     0x54        ffffffffffff    1   0
+comm_error_cnt     0x55        ffffffffffff    1   0
+tap_eye            0x56        ffffffffffff    1   0
+l1a_tap_eye        0x57        ffffffffffff    1   0
+tap_err_cnt        0x58        ffffffffffff    1   0
+threshold          0x59        ffffffffffff    1   1
+trig_period        0x5A        ffffffffffff    1   1
+temp_regs          0x5B        ffffffffffff    1   0
+pwr_regs           0x5C        ffffffffffff    1   0
+hit_debug          0x5D        ffffffffffff    1   0
+l1a_debug          0x5E        ffffffffffff    1   0
