@@ -182,7 +182,7 @@ Inst_wr_interface:entity work.wr_interface
     timestamp_o => timestamp_i,
     timestamp_48b_o => timestamp_48b
     );
-    -- wr_reset <= '1';
+    wr_reset <= '1';
 --=======================================--
 --  local control_registers
 Inst_remote_update:entity work.remote_update_top
@@ -313,8 +313,7 @@ Inst_regs:entity work.control_registers
     probe_out21(0) => v_fake_hit,
     probe_out22 => v_threshold,
     probe_out23 => v_period,
-    probe_out24(0) => v_sma_sel,
-    probe_out25(0) => wr_reset
+    probe_out24(0) => v_sma_sel
     );
     Inst_ila:entity work.ila_0
     port map(
