@@ -77,7 +77,7 @@ Inst_sys_clk_gen: entity work.clk_wiz_0
     clk_out2 => sys_clk_125M,
     clk_out3 => sys_clk_200M_o,                
     clk_out4 => sys_clk_62M5_inv,
-    locked => sys_clk_lock_o
+    locked => sys_clk_lock
     );
 Inst_local_led:entity work.LED_breath
     port map(
