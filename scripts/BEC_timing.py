@@ -79,6 +79,8 @@ def main():
                     "19 = trigger source configure\n"
                     "20 = trigger threshold\n"
                     "21 = trigger period\n"
+                    "22 = tx1 source select\n"
+                    "23 = tx1 invert\n"
                     )
         if cmd == "q":
             exit(0)
@@ -256,6 +258,26 @@ def main():
         elif cmd == '21':
             period = input("input trigger period in HEX: ")
             ttim.set("trig_period", int(period))
+            sleep(0.5)
+            print("done!\n")
+        elif cmd == '22':
+            tx1_sel = input("input tx1_sel set in HEX: ")
+            if len(tx1_sel) <= 8:
+                ttim.set("tx1_sel1", int(tx1_sel, 16))
+                ttim.set("tx1_sel2", 0)
+            else:
+                ttim.set("tx1_sel1", int(tx1_sel[-8:], 16))
+                ttim.set("tx1_sel2", int(tx1_sel[:-8], 16))
+            sleep(0.5)
+            print("done!\n")
+        elif cmd == '23':
+            inv_o1 = input("input tx1 invert in HEX: ")
+            if len(inv_o1) <= 8:
+                ttim.set("inv_o1_1", int(inv_o1, 16))
+                ttim.set("inv_o1_2", 0)
+            else:
+                ttim.set("inv_o1_1", int(inv_o1[-8:], 16))
+                ttim.set("inv_o1_2", int(inv_o1[:-8], 16))
             sleep(0.5)
             print("done!\n")
 
