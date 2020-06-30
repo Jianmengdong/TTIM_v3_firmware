@@ -704,6 +704,52 @@
         <net name="nhit_i[0]"/>
       </nets>
     </probe>
+    <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:0"/>
+        <Option Id="CORE_UUID" value="c1688337c3e95eb2a87f1407ab0be976"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
+        <Option Id="HW_ILA" value="Inst_ila"/>
+        <Option Id="PROBE_PORT" value="16"/>
+        <Option Id="PROBE_PORT_BITS" value="0"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="32"/>
+      </probeOptions>
+      <nets>
+        <net name="s_l1a_err_count[31]"/>
+        <net name="s_l1a_err_count[30]"/>
+        <net name="s_l1a_err_count[29]"/>
+        <net name="s_l1a_err_count[28]"/>
+        <net name="s_l1a_err_count[27]"/>
+        <net name="s_l1a_err_count[26]"/>
+        <net name="s_l1a_err_count[25]"/>
+        <net name="s_l1a_err_count[24]"/>
+        <net name="s_l1a_err_count[23]"/>
+        <net name="s_l1a_err_count[22]"/>
+        <net name="s_l1a_err_count[21]"/>
+        <net name="s_l1a_err_count[20]"/>
+        <net name="s_l1a_err_count[19]"/>
+        <net name="s_l1a_err_count[18]"/>
+        <net name="s_l1a_err_count[17]"/>
+        <net name="s_l1a_err_count[16]"/>
+        <net name="s_l1a_err_count[15]"/>
+        <net name="s_l1a_err_count[14]"/>
+        <net name="s_l1a_err_count[13]"/>
+        <net name="s_l1a_err_count[12]"/>
+        <net name="s_l1a_err_count[11]"/>
+        <net name="s_l1a_err_count[10]"/>
+        <net name="s_l1a_err_count[9]"/>
+        <net name="s_l1a_err_count[8]"/>
+        <net name="s_l1a_err_count[7]"/>
+        <net name="s_l1a_err_count[6]"/>
+        <net name="s_l1a_err_count[5]"/>
+        <net name="s_l1a_err_count[4]"/>
+        <net name="s_l1a_err_count[3]"/>
+        <net name="s_l1a_err_count[2]"/>
+        <net name="s_l1a_err_count[1]"/>
+        <net name="s_l1a_err_count[0]"/>
+      </nets>
+    </probe>
     <probe type="vio_input" busType="bus" source="netlist" spec="VIO_INPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="ACTIVITY_PERSISTENCE" value="SHORT"/>
@@ -1692,7 +1738,7 @@
         <net name="v_sma_sel"/>
       </nets>
     </probe>
-    <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
+    <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
         <Option Id="CORE_LOCATION" value="1:1"/>
@@ -1700,13 +1746,16 @@
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
         <Option Id="OUTPUT_VALUE" value=""/>
-        <Option Id="OUTPUT_VALUE_RADIX" value="BINARY"/>
+        <Option Id="OUTPUT_VALUE_RADIX" value="HEX"/>
         <Option Id="PROBE_PORT" value="25"/>
         <Option Id="PROBE_PORT_BITS" value="0"/>
-        <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="4"/>
       </probeOptions>
       <nets>
-        <net name="wr_reset_OBUF"/>
+        <net name="v_trig_window[3]"/>
+        <net name="v_trig_window[2]"/>
+        <net name="v_trig_window[1]"/>
+        <net name="v_trig_window[0]"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">

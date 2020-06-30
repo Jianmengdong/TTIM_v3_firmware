@@ -1,11 +1,10 @@
-from TTIM_v2 import *
+from ipbus import *
 from time import sleep
-import platform
 
 
 def calibrate_ttc(ttim):
     print("start!")
-    ttim.set("calib_enable", 1)
+    ttim.set("calib_enable", 2)
     sleep(2)
     ttim.set("calib_enable", 0)
     sleep(0.1)
@@ -18,8 +17,10 @@ def calibrate_l1a(ttim):
     print("clear toggle bit...")
     i = 47
     s = ""
-    current_ch = ttim.get("channel_sel")
-    current_toggle = ttim.get("hit_toggle")
+    current_ch = ttim.get("channel_selr")
+    tg1 = hex(ttim.get("hit_toggle1r"))
+    tg2 = hex(ttim.get("hit_toggle2r"))
+    toggle = tg2 + tg1[2:]
     while i >= 0:
         if i == current_ch:
             s = s + "0"
@@ -27,22 +28,22 @@ def calibrate_l1a(ttim):
             s = s + "1"
         i = i - 1
     toggle_mask = int(s, 2)
-    ttim.set("hit_toggle", current_toggle & toggle_mask)
+    ttim.set("hit_toggle", int(toggle, 16) & toggle_mask)
     print("start")
-    ttim.set("calib_enable", 2)
+    ttim.set("l1a_calib_enable", 4)
     sleep(2)
-    ttim.set("calib_enable", 0)
+    ttim.set("l1a_calib_enable", 0)
     l1a_eye = ttim.get("l1a_tap_eye")
     # sleep(1)
     print("l1a eye: %s" % l1a_eye)
     if l1a_eye < 40:
         print("need invert toggle!")
-        toggle = current_toggle | (1 << current_ch)
+        toggle = int(toggle, 16) | (1 << current_ch)
         ttim.set("hit_toggle", toggle)
         print("toggle inverted, restart!")
-        ttim.set("calib_enable", 2)
+        ttim.set("l1a_calib_enable", 4)
         sleep(2)
-        ttim.set("calib_enable", 0)
+        ttim.set("l1a_calib_enable", 0)
         l1a_eye = ttim.get("l1a_tap_eye")
         # sleep(1)
         print("l1a eye: %s" % l1a_eye)
@@ -50,29 +51,21 @@ def calibrate_l1a(ttim):
 
 
 def main():
-    """This script is used for debug and test purpose. Function needed is based on Padova BEC_timing.py"""
-
-    vr = platform.python_version()
-    print("Python version is %s" % vr)
-    if int(vr.split('.')[0]) != 3:
-        print("Please use Python3.x!")
-        exit()
-    # ttim_ip = "192.168.10.11"
-    ttim = TTIM()
-    print("*" * 20)
-    print("  TTIM_v2 test script")
-    print("")
-    ch_i = ttim.get("channel_sel") + 1
+    ttim = GLIB()
+    print("TTIM version: ", hex(ttim.get("version")))
+    print("WR clock locked: ", hex(ttim.get("pll_locked")))
+    print("Trigger link aligned: ", hex(ttim.get("rx_aligned")))
+    ch_i = ttim.get("channel_selr") + 1
     while True:
         cmd = input("enter the number of the function, q to exit\n"
                     "1 = 1588 ptp enable\n"
-                    "2 = 1588 ptp disable\n"
+                    "2 = set trigger window\n"
                     "3 = change channel mask\n"
                     "4 = select GCU channel\n"
                     "5 = TTCRX error report of current channel\n"
                     "6 = PRBS error report of current channel\n"
                     "7 = broadcast rst errors\n"
-                    "8 = broadcast idle\n"
+                    "8 = change test mode\n"
                     "9 = GCU TTC calibration of current channel\n"
                     "10 = GCU L1A calibration of current channel\n"
                     "11 = toggle hit bits\n"
@@ -83,38 +76,42 @@ def main():
                     "16 = set delay tap\n"
                     "17 = manual trigger\n"
                     "18 = sma select\n"
-                    "19 = hit l1a debug\n"
+                    "19 = trigger source configure\n"
+                    "20 = trigger threshold\n"
+                    "21 = trigger period\n"
                     )
         if cmd == "q":
-            exit()
-        elif cmd == "1":
-            ttim.set("inject_reset", 4)
-            sleep(1)
+            exit(0)
+        elif cmd == '1':
+            ptp = input("1 to enable, 0 to disable: ")
+            ttim.set("ptp_enable", int(ptp))
+            sleep(0.5)
             print("done!\n")
-        elif cmd == "2":
-            ttim.set("inject_reset", 0)
-            sleep(1)
+        elif cmd == '2':
+            window = input("input trigger window, 0 - 9: ")
+            ttim.set("trig_window", int(window))
+            sleep(0.5)
             print("done!\n")
-        elif cmd == "3":
-            print("Current mask: %s" % hex(ttim.get("channel_mask")))
-            mask = input("Input channel mask('1' to enable): ")
-            if mask is None:
-                pass
+        elif cmd == '3':
+            ch_mask = input("input mask in HEX: ")
+            if len(ch_mask) <= 8:
+                ttim.set("channel_mask1", int(ch_mask, 16))
+                ttim.set("channel_mask2", 0)
             else:
-                mask_int = int(mask, 16)
-                ttim.set("channel_mask", mask_int)
-                print("channel mask set to %s\n" % mask)
-                sleep(1)
-        elif cmd == "4":
+                ttim.set("channel_mask1", int(ch_mask[-8:], 16))
+                ttim.set("channel_mask2", int(ch_mask[:-8], 16))
+            sleep(0.5)
+            print("done!\n")
+        elif cmd == '4':
             ch = input("input GCU channel(1 - 48, 0 to check current channel): ")
             if ch == "0":
-                ch_i = ttim.get("channel_sel") + 1
+                ch_i = ttim.get("channel_selr") + 1
                 sleep(1)
                 print("Current channel %d" % ch_i)
             else:
                 ch_i = int(ch, 10) - 1
                 ttim.set("channel_sel", ch_i)
-                sleep(1)
+                sleep(0.5)
                 print("done!\n")
         elif cmd == "5":
             sbit_error_cnt = ttim.get("sbit_error_cnt")
@@ -127,126 +124,94 @@ def main():
         elif cmd == "6":
             error_cnt1 = ttim.get("error_cnt1")
             error_cnt2 = ttim.get("error_cnt2")
-            error_time1 = ttim.get("error_time1")
-            error_time2 = ttim.get("error_time2")
+            error_time1_1 = hex(ttim.get("error_time1_1"))
+            error_time1_2 = hex(ttim.get("error_time1_2"))
+            error_time1 = error_time1_2 + error_time1_1[2:]
+            error_time2_1 = hex(ttim.get("error_time2_1"))
+            error_time2_2 = hex(ttim.get("error_time2_2"))
+            error_time2 = error_time2_2 + error_time2_1[2:]
             print("channel %d error_cnt1: %d" % (ch_i, error_cnt1))
             print("channel %d error_cnt2: %d" % (ch_i, error_cnt2))
-            print("channel %d error_time1: %d" % (ch_i, error_time1))
-            print("channel %d error_time2: %d\n" % (ch_i, error_time2))
-            sleep(1)
-        elif cmd == "7":
+            print("channel %d error_time1: %s" % (ch_i, error_time1))
+            print("channel %d error_time2: %s\n" % (ch_i, error_time2))
+            sleep(0.5)
+        elif cmd == '7':
             ttim.set("chb_req", 1)
             i = 0
             while i < 1:
-                grant = ttim.get("system_status") >> 3 & 1
-                if grant == 1:
-                    i = 1
-            ttim.set("chb_req", 2)
-            ttim.set("chb_req", 0)
-            sleep(1)
-            print("done!\n")
-        elif cmd == "8":
-            ttim.set("chb_req", 1)
-            i = 0
-            while i < 1:
-                grant = ttim.get("system_status") >> 3 & 1
+                grant = ttim.get("chb_grant")
                 # print(grant)
                 if grant == 1:
                     i = 1
-            ttim.set("chb_req", 4)
-            ttim.set("chb_req", 0)
-            sleep(1)
+            ttim.set("ttc_rst_err", 2)
+            sleep(0.5)
+            ttim.set("ttc_rst_err", 0)
             print("done!\n")
-        elif cmd == "9":
+        elif cmd == '8':
+            test_mode = input("input test mode in HEX: ")
+            if len(test_mode) <= 8:
+                ttim.set("test_mode1", int(test_mode, 16))
+                ttim.set("test_mode2", 0)
+            else:
+                ttim.set("test_mode1", int(test_mode[-8:], 16))
+                ttim.set("test_mode2", int(test_mode[:-8], 16))
+            sleep(0.5)
+            print("done!\n")
+        elif cmd == '9':
             calibrate_ttc(ttim)
-            # print("start!")
-            # ttim.set("calib_enable", 1)
-            # sleep(2)
-            # ttim.set("calib_enable", 0)
-            # sleep(1)
-            # eye = ttim.get("tap_eye")
-            # print("TTC eye: %s" % eye)
-            # print("done!\n")
-        elif cmd == "10":
+        elif cmd == '10':
             calibrate_l1a(ttim)
-            # print("clear toggle bit...")
-            # i = 47
-            # s = ""
-            # current_ch = ttim.get("channel_sel")
-            # current_toggle = ttim.get("hit_toggle")
-            # while i >= 0:
-            #     if i == current_ch:
-            #         s = s + "0"
-            #     else:
-            #         s = s + "1"
-            #     i = i - 1
-            # toggle_mask = int(s, 2)
-            # ttim.set("hit_toggle", current_toggle & toggle_mask)
-            # print("start")
-            # ttim.set("calib_enable", 2)
-            # sleep(3)
-            # ttim.set("calib_enable", 0)
-            # l1a_eye = ttim.get("l1a_tap_eye")
-            # # sleep(1)
-            # print("l1a eye: %s" % l1a_eye)
-            # if l1a_eye < 40:
-            #     print("need invert toggle!")
-            #     toggle = current_toggle | (1 << current_ch)
-            #     ttim.set("hit_toggle", toggle)
-            #     print("toggle inverted, restart!")
-            #     ttim.set("calib_enable", 2)
-            #     sleep(3)
-            #     ttim.set("calib_enable", 0)
-            #     l1a_eye = ttim.get("l1a_tap_eye")
-            #     # sleep(1)
-            #     print("l1a eye: %s" % l1a_eye)
-            # print("done!\n")
-        elif cmd == "11":
-            print("current toggle value: %s" % hex(ttim.get("hit_toggle")))
-            tg = int(input("hit toggle(in hex): "), 16)
-            ttim.set("hit_toggle", tg)
-            sleep(1)
+        elif cmd == '11':
+            tg1 = hex(ttim.get("hit_toggle1r"))
+            tg2 = hex(ttim.get("hit_toggle2r"))
+            toggle = tg2 + tg1[2:]
+            print("current toggle value: %s" % toggle)
+            tg = input("hit toggle(in hex): ")
+            if len(tg) <= 8:
+                ttim.set("hit_toggle1", int(tg, 16))
+                ttim.set("hit_toggle2", 0)
+            else:
+                ttim.set("hit_toggle1", int(tg[-8:], 16))
+                ttim.set("hit_toggle2", int(tg[:-8], 16))
+            sleep(0.5)
             print("done!\n")
         elif cmd == "12":
-            swap = int(input("swap value (in hex): "), 16)
-            ttim.set("pair_swap", swap)
-            sleep(1)
+            swap = input("swap value (in hex): ")
+            if len(swap) <= 8:
+                ttim.set("pair_swap1", int(swap, 16))
+                ttim.set("pair_swap2", 0)
+            else:
+                ttim.set("pair_swap1", int(swap[-8:], 16))
+                ttim.set("pair_swap2", int(swap[:-8], 16))
+            sleep(0.5)
             print("done!\n")
-        elif cmd == "13":
-            status = ttim.get("system_status")
-            # print(hex(status))
-            sleep(0.1)
-            version = hex(status >> 4)
-            pll = status & 1
-            ttc_ready = status >> 1 & 1
-            rx_align = status >> 2 & 1
-            print("Hardware/Firmware version: %s" % version)
-            print("Local PLL: %d" % pll)
-            print("TTC TX ready: %d" % ttc_ready)
-            print("Trigger link aligned: %d" % rx_align)
-            ttc_align = hex(ttim.get("channel_rdy"))
-            print("TTC RX ready: %s \n" % ttc_align)
-            if version[2] == "3":
-                temp = ttim.get("temp_regs")
-                temp3 = (temp & 0x1ff) * 0.5
-                temp2 = (temp >> 9 & 0x1ff) * 0.5
-                temp1 = (temp >> 18) * 0.5
-                voltage = ttim.get("pwr_regs")
-                current = (voltage >> 24) * 0.0025
-                VDD = (voltage >> 12 & 0xfff) * 0.025
-                Vttim = (voltage & 0xfff) * 0.001
-                print("Temperature:")
-                print("Left: %.1f ℃  Middle: %.1f ℃  Right: %.1f ℃" % (temp1, temp3, temp2))
-                print("Current: %.3f A   Vin: %.2f V   V_ttim: %.3f V" % (current, VDD, Vttim))
-            sleep(1)
-        elif cmd == "14":
-            ptp = ttim.get("inject_reset")
-            reset = ptp | 1
-            clear = ptp & 4
-            ttim.set("inject_reset", reset)
-            sleep(0.1)
-            ttim.set("inject_reset", clear)
-            sleep(1)
+        elif cmd == '13':
+            print("TTIM version: ", hex(ttim.get("version")))
+            print("WR clock locked: ", hex(ttim.get("pll_locked")))
+            print("Trigger link aligned: ", hex(ttim.get("rx_aligned")))
+            print("TTC tx ready: ", hex(ttim.get("tx_ready")))
+            temp = ttim.get("temperature")
+            voltage1 = ttim.get("voltage1")
+            voltage2 = ttim.get("voltage2")
+            voltage3 = ttim.get("voltage3")
+            temp3 = (temp & 0x1ff) * 0.5
+            temp2 = (temp >> 9 & 0x1ff) * 0.5
+            temp1 = (temp >> 18) * 0.5
+            temp_fpga = (voltage2 >> 12) * 503.975 / 4096 - 273.15
+            print("Temperature:")
+            print("Left: %.1f ℃  Middle: %.1f ℃  Right: %.1f ℃  FPGA: %.1f ℃" % (temp1, temp3, temp2, temp_fpga))
+            current = (voltage1 >> 12) * 0.0025
+            VDD = (voltage1 & 0xfff) * 0.025
+            Vttim = (voltage2 & 0xfff) * 0.001
+            Vint = (voltage3 >> 12) * 3.0 / 4096
+            Vaux = (voltage3 & 0xfff) * 3.0 / 4096
+            print("Current: %.3f A   Vin: %.2f V   V_ttim: %.3f V" % (current, VDD, Vttim))
+            print("VCCINT: %.2f V   VCCAUX: %.3f V" % (Vint, Vaux))
+            sleep(0.5)
+        elif cmd == '14':
+            ttim.set("reset_err", 4)
+            ttim.set("reset_err", 0)
+            sleep(0.5)
             print("done!\n")
         elif cmd == "15":
             rpy = input("y/n?: ")
@@ -256,36 +221,45 @@ def main():
                 ttim.set("gen_fake_nhit", 0)
             sleep(0.1)
         elif cmd == "16":
-            ch = input("input GCU channel(1 - 48, 0 to check current channel): ")
-            ch_i = int(ch, 10) - 1
-            ttim.set("channel_sel", ch_i)
             tap = int(input("input tap value: "), 10)
             ttim.set("tap_cnt", tap)
             ch_sel = input("1 -> RX1, 2 -> RX2")
             if ch_sel == "1":
-                ttim.set("load_tap", 1)
-                ttim.set("load_tap", 0)
-                ttim.set("inject_reset", 1)
-                ttim.set("inject_reset", 0)
+                ttim.set("load1", 1)
+                ttim.set("load1", 0)
+                ttim.set("reset_err", 4)
+                ttim.set("reset_err", 0)
             else:
-                ttim.set("load_tap", 2)
-                ttim.set("load_tap", 0)
-                ttim.set("inject_reset", 1)
-                ttim.set("inject_reset", 0)
+                ttim.set("load2", 2)
+                ttim.set("load2", 0)
+                ttim.set("reset_err", 4)
+                ttim.set("reset_err", 0)
+            print("tap set to: %d" % ttim.get("tap_cntr"))
+            sleep(0.5)
+            print("done!\n")
         elif cmd == "17":
-            pass
+            ttim.set("sma_sel", 1)
         elif cmd == "18":
             sma_sel = input("0-> RX1  1-> RX2")
             ttim.set("sma_sel", int(sma_sel))
             sleep(0.1)
-        elif cmd == "19":
-            hit = hex(ttim.get("hit_debug"))
-            l1a = bin(ttim.get("l1a_debug"))
-            print("hit in HEX: ", hit)
-            print("l1a in BIN: ", l1a)
-            sleep(1)
-        else:
-            print("wrong input")
+        elif cmd == '19':
+            trig_src = input("input trigger source in HEX: ")
+            ttim.set("en_trig", int(trig_src))
+            sleep(0.5)
+            print("done!\n")
+        elif cmd == '20':
+            th = input("input trigger threshold in HEX: ")
+            ttim.set("trig_threshold", int(th))
+            sleep(0.5)
+            print("done!\n")
+        elif cmd == '21':
+            period = input("input trigger period in HEX: ")
+            ttim.set("trig_period", int(period))
+            sleep(0.5)
+            print("done!\n")
+
+    pass
 
 
 if __name__ == "__main__":

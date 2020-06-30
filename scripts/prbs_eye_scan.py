@@ -1,4 +1,4 @@
-from TTIM_v2 import *
+from ipbus import *
 from time import sleep
 # import matplotlib as mp
 # mp.use("Agg")
@@ -7,14 +7,20 @@ from time import sleep
 
 print("----------Eye scan - Demonstration script----------------")
 # ttim_ip = "192.168.10.11"
-ttim = TTIM()
+ttim = GLIB()
 x1 = []
 list1 = []
 ch = int(input("channel to run eye scan(1 - 48): ")) - 1
-test_mode = ttim.get("test_mode") | (1 << ch)
-ttim.set("test_mode", test_mode)
+# tm1 = hex(ttim.get("test_mode1r"))
+# tm2 = hex(ttim.get("test_mode2r"))
+# test_mode = hex(int(tm2 + tm1[2:], 16) | (1 << ch))
+# if len(test_mode) <= 8:
+#     ttim.set("test_mode1", int(test_mode, 16))
+#     ttim.set("test_mode2", 0)
+# else:
+#     ttim.set("test_mode1", int(test_mode[-8:], 16))
+#     ttim.set("test_mode2", int(test_mode[:-8], 16))
 ttim.set("channel_sel", ch)
-ttim.set("load_tap", 0)
 # sel = input("1 -> RX1\n2 -> RX2\n")
 print("eye scan start...")
 j = 0
@@ -28,10 +34,10 @@ print("tap_cnt    error")
 while j < 63:
     # err_cnt1 = ttim.get("tap_err_cnt")
     ttim.set("tap_cnt", j)
-    ttim.set("load_tap", 1)
-    ttim.set("load_tap", 0)
-    ttim.set("inject_reset", 1)
-    ttim.set("inject_reset", 0)
+    ttim.set("load1", 1)
+    ttim.set("load1", 0)
+    ttim.set("reset_err", 4)
+    ttim.set("reset_err", 0)
     sleep(0.2)
     # err_cnt2 = ttim.get("tap_err_cnt")
     # err_cnt = err_cnt2 - err_cnt1
@@ -57,11 +63,11 @@ if eye_width1 >= eye_width2:
 else:
     tap_cnt = edge2 - eye_width2//2
 ttim.set("tap_cnt", tap_cnt)
-ttim.set("load_tap", 1)
-ttim.set("load_tap", 0)
+ttim.set("load1", 1)
+ttim.set("load1", 0)
 print("RX1 tap_cnt set to %d" % tap_cnt)
-ttim.set("inject_reset", 1)
-ttim.set("inject_reset", 0)
+ttim.set("reset_err", 4)
+ttim.set("reset_err", 0)
 
 j = 0
 eye_width1 = 0
@@ -73,10 +79,10 @@ eye_stop = 0
 while j < 63:
     # err_cnt1 = ttim.get("tap_err_cnt")
     ttim.set("tap_cnt", j)
-    ttim.set("load_tap", 2)
-    ttim.set("load_tap", 0)
-    ttim.set("inject_reset", 1)
-    ttim.set("inject_reset", 0)
+    ttim.set("load2", 2)
+    ttim.set("load2", 0)
+    ttim.set("reset_err", 4)
+    ttim.set("reset_err", 0)
     sleep(0.2)
     # err_cnt2 = ttim.get("tap_err_cnt")
     # err_cnt = err_cnt2 - err_cnt1
@@ -101,11 +107,11 @@ if eye_width1 >= eye_width2:
 else:
     tap_cnt = edge2 - eye_width2//2
 ttim.set("tap_cnt", tap_cnt)
-ttim.set("load_tap", 2)
-ttim.set("load_tap", 0)
+ttim.set("load2", 2)
+ttim.set("load2", 0)
 print("RX2 tap_cnt set to %d" % tap_cnt)
-ttim.set("inject_reset", 1)
-ttim.set("inject_reset", 0)
+ttim.set("reset_err", 4)
+ttim.set("reset_err", 0)
 # plt.figure(1)
 # plt.title("eye scan result")
 # plt.xlabel("tap count")

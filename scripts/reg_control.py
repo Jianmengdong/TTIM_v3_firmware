@@ -1,10 +1,10 @@
-from TTIM_v2 import *
+from ipbus import *
 # from time import sleep
 
 
 def main():
     # ttim_ip = "192.168.10.11"
-    ttim = TTIM()
+    ttim = GLIB()
     print("*" * 20)
     print("  TTIM_v2 console")
     print("")
@@ -15,12 +15,6 @@ def main():
         command = input("cmd: ")
         if command == "quit":
             break
-        elif command == "show registers":
-            reg_list = ttim.show_registers()
-            i = 0
-            while i < len(reg_list):
-                print(reg_list[i])
-                i += 1
         else:
             cmd_list = command.split()
             if len(cmd_list) == 1:

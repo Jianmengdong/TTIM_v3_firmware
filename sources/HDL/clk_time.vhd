@@ -8,15 +8,16 @@ entity clk_time is
     Port ( 
     local_clk_p : in STD_LOGIC; --local 125M oscillator
     local_clk_n : in STD_LOGIC;
-    wr_clk_p : in std_logic; --WR clock
-    wr_clk_n : in std_logic;
+    --wr_clk_p : in std_logic; --WR clock
+    --wr_clk_n : in std_logic;
+    sys_clk_i : in std_logic;
     pps_i : in std_logic;
     local_clk_o : out std_logic; --clock to MGT
     local_clk_62M5_o : out std_logic;
     local_clk_125M_o : out std_logic;
     local_clk_200M_o : out std_logic;
     local_clk_lock_o : out std_logic;
-    sys_clk_o : out std_logic; --clock to MGT
+    --sys_clk_o : out std_logic; --clock to MGT
     sys_clk_62M5_o : out std_logic;
     sys_clk_125M_o : out std_logic;
     sys_clk_200M_o : out std_logic;
@@ -47,21 +48,21 @@ Inst_bufg_local: BUFG
     I => local_clk,
     O => local_clk_i
     );
-ibufds_sys : IBUFDS_GTE2  
-    port map(
-    O               => wr_clk,
-    ODIV2           => open,
-    CEB             => '0',
-    I               => wr_clk_p,
-    IB              => wr_clk_n
-    );
-    sys_clk_o <= wr_clk;
+-- ibufds_sys : IBUFDS_GTE2  
+    -- port map(
+    -- O               => wr_clk,
+    -- ODIV2           => open,
+    -- CEB             => '0',
+    -- I               => wr_clk_p,
+    -- IB              => wr_clk_n
+    -- );
+    -- sys_clk_o <= wr_clk;
 Inst_bufg_sys: BUFG
     port map(
-    I => wr_clk,
+    I => sys_clk_i,
     O => wr_clk_i
     );
-    
+    --wr_clk_i <=sys_clk_i;
 Inst_local_clk_gen:entity work.clk_wiz_0
     port map(
     clk_in1 => local_clk_i,
@@ -77,7 +78,7 @@ Inst_sys_clk_gen: entity work.clk_wiz_0
     clk_out2 => sys_clk_125M,
     clk_out3 => sys_clk_200M_o,                
     clk_out4 => sys_clk_62M5_inv,
-    locked => sys_clk_lock
+    locked => sys_clk_lock_o
     );
 Inst_local_led:entity work.LED_breath
     port map(

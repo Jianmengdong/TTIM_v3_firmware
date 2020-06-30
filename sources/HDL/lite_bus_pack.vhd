@@ -85,22 +85,7 @@ function f_lite_bus_addr_sel(signal addr : std_logic_vector(7 downto 0)) return 
             sel := 24;
         elsif std_match(addr, "01011010") then --0x5A
             sel := 25;
-        elsif std_match(addr, "01011011") then --0x5B
-            sel := 26;
-        elsif std_match(addr, "01011100") then --0x5C
-            sel := 27;
-        elsif std_match(addr, "01011101") then --0x5D
-            sel := 28;
-        elsif std_match(addr, "01011110") then --0x5E
-            sel := 29;
-        elsif std_match(addr, "01011111") then --0x5F
-            sel := 30;
-        elsif std_match(addr, "01100000") then --0x60
-            sel := 31;
-        elsif std_match(addr, "01100001") then --0x61
-            sel := 32;
-        elsif std_match(addr, "01100010") then --0x62
-            sel := 33;
+        
         else
             sel := 99;
         end if;

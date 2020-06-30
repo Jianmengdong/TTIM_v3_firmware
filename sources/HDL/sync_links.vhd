@@ -62,6 +62,7 @@ entity sync_links is
     sbit_err_count : out std_logic_vector(31 downto 0);
     dbit_err_count : out std_logic_vector(31 downto 0);
     comm_err_count : out std_logic_vector(31 downto 0);
+    l1a_err_count : out std_logic_vector(31 downto 0);
     eye_v : out std_logic_vector(31 downto 0);
     l1a_eye_v : out std_logic_vector(31 downto 0);
     s_tap_error_count : out std_logic_vector(31 downto 0)
@@ -193,6 +194,7 @@ i_prbs_chk:entity work.prbs_check
     sbit_err_count <= s_1bit_err_count(ch_sel);
     dbit_err_count <= s_2bit_err_count(ch_sel);
     comm_err_count <= s_comm_err_count(ch_sel);
+    l1a_err_count <= s_l1a_err_count(ch_sel);
 --  link logic when normal running
  -- ttc encoder
 Inst_ttc_encoder : entity work.ttc_encoder
@@ -512,4 +514,5 @@ Inst_bec_1588_ptp:entity work.BEC_1588_ptp_v2
     s_comm_err(i*32 - 1 downto (i-1)*32) <= s_comm_err_count_v(i-1)(31 downto 0);
     s_l1a_err(i*32 - 1 downto (i-1)*32)  <= s_l1a_err_count(i-1)(31 downto 0);
   end generate gen_comm_err_vector;
+  
 end Behavioral;
