@@ -36,8 +36,8 @@ while j < 63:
     ttim.set("tap_cnt", j)
     ttim.set("load1", 1)
     ttim.set("load1", 0)
-    ttim.set("reset_err", 4)
-    ttim.set("reset_err", 0)
+    ttim.set("load1", 4)
+    ttim.set("load1", 0)
     sleep(0.2)
     # err_cnt2 = ttim.get("tap_err_cnt")
     # err_cnt = err_cnt2 - err_cnt1
@@ -66,8 +66,8 @@ ttim.set("tap_cnt", tap_cnt)
 ttim.set("load1", 1)
 ttim.set("load1", 0)
 print("RX1 tap_cnt set to %d" % tap_cnt)
-ttim.set("reset_err", 4)
-ttim.set("reset_err", 0)
+ttim.set("load1", 4)
+ttim.set("load1", 0)
 
 j = 0
 eye_width1 = 0
@@ -79,10 +79,10 @@ eye_stop = 0
 while j < 63:
     # err_cnt1 = ttim.get("tap_err_cnt")
     ttim.set("tap_cnt", j)
-    ttim.set("load2", 2)
-    ttim.set("load2", 0)
-    ttim.set("reset_err", 4)
-    ttim.set("reset_err", 0)
+    ttim.set("load1", 2)
+    ttim.set("load1", 0)
+    ttim.set("load1", 4)
+    ttim.set("load1", 0)
     sleep(0.2)
     # err_cnt2 = ttim.get("tap_err_cnt")
     # err_cnt = err_cnt2 - err_cnt1
@@ -107,11 +107,11 @@ if eye_width1 >= eye_width2:
 else:
     tap_cnt = edge2 - eye_width2//2
 ttim.set("tap_cnt", tap_cnt)
-ttim.set("load2", 2)
-ttim.set("load2", 0)
+ttim.set("load1", 2)
+ttim.set("load1", 0)
 print("RX2 tap_cnt set to %d" % tap_cnt)
-ttim.set("reset_err", 4)
-ttim.set("reset_err", 0)
+ttim.set("load1", 4)
+ttim.set("load1", 0)
 # plt.figure(1)
 # plt.title("eye scan result")
 # plt.xlabel("tap count")

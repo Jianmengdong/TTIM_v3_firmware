@@ -16,7 +16,7 @@ inv_o1_1                0x00000048  ffffffff    0   1
 inv_o1_2                0x00000049  ffffffff    0   1
 tap_cnt                 0x0000004a  ffffffff    0   1
 channel_sel             0x0000004b  ffffffff    0   1
-load1                   0x0000004c  00000001    0   1
+load1                   0x0000004c  ffffffff    0   1
 load2                   0x0000004c  00000002    0   1
 reset_err               0x0000004c  00000004    0   1
 inj_err                 0x0000004c  00000008    0   1
