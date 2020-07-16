@@ -196,7 +196,7 @@ architecture behavioral of SpiFlashProgrammer is
   constant  cCmdPPTimeOut     : std_logic_vector(31 downto 0) := X"0000B3B0"; -- max tPP * cClkFrequencyHz / 22
 
   -- Perform erase (destroy) and program (restore) of switch word
-  constant  cEraseSwitchWord  : std_logic                     := '1';
+  constant  cEraseSwitchWord  : std_logic                     := '1'; --enable multiboot fallback,don't need to erase switch word
 
   -- Constants for output error flags
   constant  cErrorNone      : std_logic_vector(5 downto 0)  := B"000000";
@@ -283,6 +283,7 @@ architecture behavioral of SpiFlashProgrammer is
   signal  stateAfterSendWord  : sProgrammer;
   signal  stateAfterPollStatus: sProgrammer;
   signal  stateErrorTimeOut   : sProgrammer;
+  signal debug_fsm : std_logic_vector(7 downto 0);
 
 begin
   -- Main state machine
@@ -318,6 +319,7 @@ begin
         -- Setup for next state
         regData40           <= X"0000000000";
         stateProgrammer     <= sProgrammerInitialize;
+        debug_fsm <= x"00";
       else
         case (stateProgrammer) is
           --------------------------------------------------------------------
@@ -336,6 +338,7 @@ begin
             stateProgrammer             <= sProgrammerSendWord;
             stateAfterSendWord          <= sProgrammerCheckId;
             regSSDResetAfterSendWord    <= '1';
+            debug_fsm <= x"00";
 
           --------------------------------------------------------------------
           -- CHECK DEVICE ID - sanity check SPI flash connectivity
@@ -350,6 +353,7 @@ begin
             stateProgrammer             <= sProgrammerSendWord;
             stateAfterSendWord          <= sProgrammerCheckId1;
             regSSDResetAfterSendWord    <= '1';
+            debug_fsm <= x"01";
 
           when sProgrammerCheckId1 =>
             if ((cMicronNP5Q='1') and (regData40(23 downto 8) /= cIdcode24NP5Q(23 downto 8))) then
@@ -376,6 +380,7 @@ begin
                 stateProgrammer <= sProgrammerEraseUpdateArea;      -- Erase only update area
               end if;
             end if;
+            debug_fsm <= x"02";
 
           --------------------------------------------------------------------
           -- ERASE SWITCH WORD - erase the "critical switch word" that determines whether
@@ -407,6 +412,7 @@ begin
             stateAfterPollStatus        <= sProgrammerEraseUpdateArea;
             regTimer                    <= cCmdSETimeOut;
             stateErrorTimeOut           <= sProgrammerErrorEraseTO;
+            debug_fsm <= x"03";
 
           --------------------------------------------------------------------
           -- ERASE UPDATE IMAGE SECTORS
@@ -424,6 +430,7 @@ begin
               regCounter32                <= cAddrUpdateStart;
               stateProgrammer             <= sProgrammerEraseUpdateArea1;
             end if;
+            debug_fsm <= x"04";
 
           when sProgrammerEraseUpdateArea1 =>
             if (cAddrWidth=32) then
@@ -439,10 +446,12 @@ begin
             stateAfterPollStatus        <= sProgrammerEraseUpdateArea2;
             regTimer                    <= cCmdSETimeOut;
             stateErrorTimeOut           <= sProgrammerErrorEraseTO;
+            debug_fsm <= x"05";
 
           when sProgrammerEraseUpdateArea2 =>
             regCounter32                <= regCounter32 + cSizeSector;
             stateProgrammer             <= sProgrammerEraseUpdateArea3;
+            debug_fsm <= x"06";
 
           when sProgrammerEraseUpdateArea3 =>
             if (regCounter32 = cAddrUpdateEnd) then
@@ -450,6 +459,7 @@ begin
             else
               stateProgrammer           <= sProgrammerEraseUpdateArea1;
             end if;
+            debug_fsm <= x"07";
 
           --------------------------------------------------------------------
           -- PROGRAM UPDATE IMAGE AREA
@@ -463,6 +473,7 @@ begin
             regEraseOK                  <= '1';
             regCounter32                <= cAddrUpdateStart;
             stateProgrammer             <= sProgrammerProgramUpdateArea1;
+            debug_fsm <= x"08";
 
           when sProgrammerProgramUpdateArea1 =>
             isQuadWrite <= '0';
@@ -490,11 +501,13 @@ begin
               regCounter10                <= cSizePage(9 downto 0);
               regCounter32                <= regCounter32 + cSizePage;
             end if;
+            debug_fsm <= x"09";
 
           when sProgrammerProgramUpdateArea2 =>
             regReady_BusyB              <= '1';
             isQuadWrite <= '1';
             stateProgrammer             <= sProgrammerProgramUpdateArea3;
+            debug_fsm <= x"0a";
 
           when sProgrammerProgramUpdateArea3 =>
             if (inDataWriteEnable = '1') then
@@ -514,20 +527,22 @@ begin
               stateProgrammer     <= sProgrammerSendWord;
               stateAfterSendWord  <= sProgrammerProgramUpdateArea4;
             end if;
+            debug_fsm <= x"0b";
 
           when sProgrammerProgramUpdateArea4 =>
             if (regCounter10 = 0) then
+              isQuadWrite <= '0';
               regSSDReset_EnableB       <= '1';
               regTimer                  <= cCmdPPTimeOut;
               stateErrorTimeOut         <= sProgrammerErrorProgramTO;
               stateProgrammer           <= sProgrammerPollStatus;
               if (regCounter32 = cAddrUpdateEnd) then
                 regProgramOK            <= '1';
-                isQuadWrite <= '0';
                 if regVerify = '1' then
                     stateAfterPollStatus    <= sProgrammerVerifyUpdateArea;
                 else
                     stateAfterPollStatus    <= sProgrammerProgramSwitchWord;
+                    --stateAfterPollStatus    <= sProgrammerEnd;
                 end if;
               else
                 stateAfterPollStatus    <= sProgrammerProgramUpdateArea1;
@@ -535,6 +550,7 @@ begin
             else
               stateProgrammer           <= sProgrammerProgramUpdateArea2;
             end if;
+            debug_fsm <= x"0c";
 
           --------------------------------------------------------------------
           -- VERIFY UPDATE IMAGE AREA
@@ -546,6 +562,7 @@ begin
           when sProgrammerVerifyUpdateArea =>
             regCounter32    <= cAddrUpdateStart;
             stateProgrammer <= sProgrammerVerifyUpdateArea1;
+            debug_fsm <= x"0d";
 
           when sProgrammerVerifyUpdateArea1 =>
             if (cAddrWidth=32) then
@@ -559,6 +576,7 @@ begin
             stateProgrammer             <= sProgrammerSendWord;
             stateAfterSendWord          <= sProgrammerVerifyUpdateArea11;
             regSSDResetAfterSendWord    <= '0';
+            debug_fsm <= x"0e";
           
           when sProgrammerVerifyUpdateArea11 =>
             regSSDReset_EnableB <= '0';
@@ -572,6 +590,7 @@ begin
             else
               stateProgrammer           <= sProgrammerVerifyUpdateArea11;
             end if;
+            debug_fsm <= x"0f";
 
           when sProgrammerVerifyUpdateArea2 =>
             regSSDReset_EnableB <= '0';
@@ -579,10 +598,12 @@ begin
             regSSDStartTransfer <= '1';
             isQuadRead <= '1';
             stateProgrammer     <= sProgrammerVerifyUpdateArea3;
+            debug_fsm <= x"10";
 
           when sProgrammerVerifyUpdateArea3 =>
             regCounter32        <= regCounter32 + 1;
             stateProgrammer     <= sProgrammerVerifyUpdateArea4;
+            debug_fsm <= x"11";
 
           when sProgrammerVerifyUpdateArea4 =>
             regSSDStartTransfer <= '0';
@@ -595,6 +616,7 @@ begin
                 stateProgrammer     <= sProgrammerVerifyUpdateArea2;
               end if;
             end if;
+            debug_fsm <= x"12";
 
           when sProgrammerVerifyUpdateArea5 =>
             regSSDReset_EnableB       <= '1';
@@ -608,6 +630,7 @@ begin
                 stateProgrammer <= sProgrammerProgramSwitchWord;
               end if;
             end if;
+            debug_fsm <= x"13";
 
           --------------------------------------------------------------------
           -- PROGRAM SWITCH WORD
@@ -633,6 +656,7 @@ begin
             stateProgrammer             <= sProgrammerSendWEAndWord;
             stateAfterSendWord          <= sProgrammerProgramSwitchWord1;
             regSSDResetAfterSendWord    <= '0';
+            debug_fsm <= x"14";
 
           when sProgrammerProgramSwitchWord1 =>
             regData40                   <= cSwitchWord & X"00";
@@ -643,6 +667,7 @@ begin
             stateAfterPollStatus        <= sProgrammerEnd;
             regTimer                    <= cCmdPPTimeOut;
             stateErrorTimeOut           <= sProgrammerErrorProgramTO;
+            debug_fsm <= x"15";
           --------------------------------------------------------------------
           -- change configuration register value
           when sProgrammerChangeMode => 
@@ -653,12 +678,14 @@ begin
             stateErrorTimeOut           <= sProgrammerErrorProgramTO;
             regData40 <= cCmdWRR & inModeRegister & x"0000";
             regCounter3 <= "011";
+            debug_fsm <= x"16";
           
           when sProgrammerChangeMode1 => 
             stateProgrammer <= sProgrammerSendWord;
             stateAfterSendWord <= sProgrammerChangeMode2;
             regData40 <= cCmdRDCR & x"00000000";
             regCounter3 <= "010";
+            debug_fsm <= x"17";
           
           when sProgrammerChangeMode2 =>
             if regData40(7 downto 0) = inModeRegister then
@@ -667,6 +694,7 @@ begin
             else
                 stateProgrammer <= sProgrammerErrorProgram;
             end if;
+            debug_fsm <= x"18";
           --------------------------------------------------------------------
           -- SEND WRITE ENABLE and COMMAND (subroutine)
           -- Before jumping to this state, see SEND WORD for requirements
@@ -679,9 +707,11 @@ begin
               regSSDStartTransfer <= '1';
               stateProgrammer     <= sProgrammerSendWE;
             end if;
+            debug_fsm <= x"19";
 
           when sProgrammerSendWE =>
             stateProgrammer     <= sProgrammerSendWE1;
+            debug_fsm <= x"1a";
 
           when sProgrammerSendWE1 =>
             regSSDStartTransfer <= '0';
@@ -689,6 +719,7 @@ begin
               regSSDReset_EnableB <= '1';
               stateProgrammer     <= sProgrammerSendWord;
             end if;
+            debug_fsm <= x"1b";
 
           --------------------------------------------------------------------
           -- SEND WORD (subroutine)
@@ -702,11 +733,13 @@ begin
             regSSDData8Send     <= regData40(39 downto 32);
             regSSDStartTransfer <= '1';
             stateProgrammer     <= sProgrammerSendWord1;
+            debug_fsm <= x"1c";
 
           when sProgrammerSendWord1 =>
             regCounter3         <= regCounter3 - 1;
             regSSDData8Send     <= regData40(31 downto 24);
             stateProgrammer     <= sProgrammerSendWord2;
+            debug_fsm <= x"1d";
 
           when sProgrammerSendWord2 =>
             if (regCounter3="000") then
@@ -721,6 +754,7 @@ begin
                 stateProgrammer     <= sProgrammerSendWord1;
               end if;
             end if;
+            debug_fsm <= x"1e";
 
           --------------------------------------------------------------------
           -- POLL STATUS
@@ -741,6 +775,7 @@ begin
             regSSDResetAfterSendWord  <= '1';
             stateAfterSendWord        <= sProgrammerPollStatus1;
             stateProgrammer           <= sProgrammerSendWord;
+            debug_fsm <= x"1f";
 
           when sProgrammerPollStatus1 =>
             if (regTimer = 0) then
@@ -773,27 +808,34 @@ begin
                 stateProgrammer <= sProgrammerPollStatus; -- Busy
               end if;
             end if;
+            debug_fsm <= x"20";
 
           --------------------------------------------------------------------
           -- ERROR STATES
           when sProgrammerErrorIdcode =>
             regError        <= cErrorIdcode;
             stateProgrammer <= sProgrammerEnd;
+            debug_fsm <= x"21";
           when sProgrammerErrorErase =>
             regError        <= cErrorErase;
             stateProgrammer <= sProgrammerEnd;
+            debug_fsm <= x"22";
           when sProgrammerErrorEraseTO =>
             regError        <= cErrorEraseTO;
             stateProgrammer <= sProgrammerEnd;
+            debug_fsm <= x"23";
           when sProgrammerErrorProgram =>
             regError        <= cErrorProgram;
             stateProgrammer <= sProgrammerEnd;
+            debug_fsm <= x"24";
           when sProgrammerErrorProgramTO =>
             regError        <= cErrorProgramTO;
             stateProgrammer <= sProgrammerEnd;
+            debug_fsm <= x"25";
           when sProgrammerErrorCrc =>
             regError        <= cErrorCrc;
             stateProgrammer <= sProgrammerEnd;
+            debug_fsm <= x"26";
 
           --------------------------------------------------------------------
           -- END/DONE STATE
@@ -802,6 +844,7 @@ begin
             regReady_BusyB      <= '1';
             regDone             <= '1';
             regSSDReset_EnableB <= '1';
+            debug_fsm <= x"27";
 
           when others =>
         end case;
@@ -865,6 +908,17 @@ begin
   outSSDReset_EnableB <= regSSDReset_EnableB;
   outSSDStartTransfer <= regSSDStartTransfer;
   outSSDData8Send     <= regSSDData8Send;
+  
+  -- inst_ila : entity work.ila_2
+  -- port map(
+  -- clk => inClk,
+  -- probe0 => debug_fsm,
+  -- probe1 => regData40,
+  -- probe2 => regError,
+  -- probe3 => regCounter3,
+  -- probe4 => regCounter32,
+  -- probe5 => regCounter10
+  -- );
 
 end behavioral;
 

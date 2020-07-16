@@ -75,6 +75,7 @@ begin
   outPortYStartTransfer <= inPort0StartTransfer when (inMuxSelect = '0') else inPort1StartTransfer;
   outPortYisQuadWrite   <= inPort0isQuadWrite   when (inMuxSelect = '0') else inPort1isQuadWrite;
   outPortYisQuadRead    <= inPort0isQuadRead    when (inMuxSelect = '0') else inPort1isQuadRead;
+  outPortYData8Send    <= inPort0Data8Send    when (inMuxSelect = '0') else inPort1Data8Send;
   outPort0TransferDone  <= inPortYTransferDone;
   outPort1TransferDone  <= inPortYTransferDone;
   outPort0Data8Receive  <= inPortYData8Receive;

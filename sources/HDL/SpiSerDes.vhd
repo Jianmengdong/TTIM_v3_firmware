@@ -134,7 +134,10 @@ entity SpiSerDes is
     outSpiMosi      : inout std_logic;  -- SPI master-out, slave-in to SPI device;IO0
     inSpiMiso       : inout  std_logic;   -- SPI master-in, slave-out from SPI device;IO1
     outSpiWpB : inout std_logic; --IO2
-    outSpiHoldB : inout std_logic --IO3
+    outSpiHoldB : inout std_logic;    --IO3
+    
+    mosi : out std_logic;
+    miso : out std_logic
   );
 end SpiSerDes;
 
@@ -154,7 +157,7 @@ architecture behavioral of SpiSerDes is
   signal    regQuadin : std_logic_vector(3 downto 0);
   signal    regQuadout : std_logic_vector(3 downto 0);
   -- Signals
-  signal    intTransferDone : std_logic;
+  signal    intTransferDone,spiMosi_o : std_logic;
 
   -- Attributes
   attribute clock_signal    : string;
@@ -210,7 +213,7 @@ begin
         elsif isQuadWrite = '1' then
             regShiftData <= regShiftData(3 downto 0) & regShiftData(7 downto 4);
         else
-            regShiftData  <= regShiftData(6 downto 0) & inSpiMiso;
+            regShiftData  <= regShiftData(6 downto 0) & regQuadin(1);
         end if;
       elsif (inStartTransfer='1') then
         -- Load data to start a new transfer sequence from a done state
@@ -224,13 +227,13 @@ begin
   begin
     if (falling_edge(inClk)) then
       if (inReset_EnableB='1') then
-        regSpiMosi  <= '1';
-        regQuadout <= x"0";
+        --regSpiMosi  <= '1';
+        regQuadout <= x"1";
       elsif (intTransferDone='0') then
         if isQuadWrite = '1' then
             regQuadout <= regShiftData(7 downto 4);
         else
-            regSpiMosi  <= regShiftData(7);
+            regQuadout(0)  <= regShiftData(7);
         end if;
       end if;
     end if;
@@ -239,14 +242,52 @@ begin
   -- Assign outputs
   outSpiClk       <= (inClk or intTransferDone or regTransferDoneDelayed);
   outSpiCsB       <= regSpiCsB;
-  --outSpiMosi      <= regSpiMosi;
-  outSpiMosi <= regQuadout(0) when isQuadWrite = '1' else
-                'Z' when isQuadRead = '1' else
-                regSpiMosi;
-  inSpiMiso <= regQuadout(1) when isQuadWrite = '1' else 'Z';
-  outSpiWpB <= regQuadout(2) when isQuadWrite = '1' else 'Z';
-  outSpiHoldB <= regQuadout(3) when isQuadWrite = '1' else 'Z';
+
   outTransferDone <= intTransferDone;
   outData8Receive <= regShiftData;
+  
+  Inst_iobuf0: IOBUF
+    port map(
+    O => regQuadin(0),
+    IO => outSpiMosi,
+    I => regQuadout(0),
+    T => isQuadRead
+    );
+    mosi <= regQuadout(0);
+    --spiMosi_o <= regQuadout(0) when isQuadWrite = '1' else regSpiMosi;
+  Inst_iobuf1: IOBUF
+    port map(
+    O => regQuadin(1),
+    IO => inSpiMiso,
+    I => regQuadout(1),
+    T => not isQuadWrite
+    );
+    miso <= regQuadin(1);
+  Inst_iobuf2: IOBUF
+    port map(
+    O => regQuadin(2),
+    IO => outSpiWpB,
+    I => regQuadout(2),
+    T => not isQuadWrite
+    );
+  Inst_iobuf3: IOBUF
+    port map(
+    O => regQuadin(3),
+    IO => outSpiHoldB,
+    I => regQuadout(3),
+    T => not isQuadWrite
+    );
+
+  -- Inst_ila: entity work.ila_3
+    -- port map(
+    -- clk => inClk,
+    -- probe0 => regQuadout,
+    -- probe1 => regQuadin,
+    -- probe2(0) => isQuadWrite,
+    -- probe3(0) => isQuadRead,
+    -- probe4(0) => intTransferDone,
+    -- probe5(0) => regSpiCsB,
+    -- probe6 => regShiftData
+    -- );
 end behavioral;
 

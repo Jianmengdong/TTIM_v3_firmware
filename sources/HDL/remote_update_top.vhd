@@ -4,6 +4,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 library UNISIM;
 use UNISIM.VComponents.all;
+use work.TTIM_pack.all;
 
 entity remote_update_top is
     Port ( 
@@ -15,12 +16,16 @@ entity remote_update_top is
     inSpiMiso_IO1           : inout std_logic;
     outSpiWpB_IO2           : inout std_logic; -- SPI flash write protect
     outSpiHoldB_IO3         : inout std_logic;
-    update_data     : in std_logic_vector(127 downto 0);
+    update_data     : in std_logic_vector(UPDATE_DATA_WIDTH - 1 downto 0);
     update_data_valid : in std_logic;
     update_fifo_empty : out std_logic;
     outSFPStatus : out std_logic_vector(8 downto 0);
     outSFPError : out std_logic_vector(5 downto 0);
-    inUpdateControl : in std_logic_vector(19 downto 0) := x"00001"
+    inUpdateControl : in std_logic_vector(19 downto 0) := x"00000";
+    re_load : in std_logic;
+    mosi : out std_logic;
+    miso : out std_logic;
+    sck : out std_logic
     );
 end remote_update_top;
 
@@ -36,13 +41,14 @@ architecture Behavioral of remote_update_top is
     signal intSSDisQuadWrite,intSSDisQuadRead,intSFPisQuadRead,intSFPisQuadWrite : std_logic;
     signal intBufgTck,intSpiClk : std_logic;
     signal update_control : std_logic_vector(19 downto 0);
+    --signal outSpiCsB_i,outSpiMosi_IO0_i,inSpiMiso_IO1_i,outSpiWpB_IO2_i,outSpiHoldB_IO3_i : std_logic;
 begin
 intBufgTck <= clk_i;
 iSpiFlashProgrammer:entity work.SpiFlashProgrammer
   port map
   (
     inClk                 => intBufgTck,
-    inReset_EnableB       => inUpdateControl(0),  --reset FSM
+    inReset_EnableB       =>  not inUpdateControl(0),  --reset FSM
     inCheckIdOnly         => inUpdateControl(1),
     inVerify              => inUpdateControl(2),
     inChangeModeOnly      => inUpdateControl(3),
@@ -117,8 +123,17 @@ port map
     outSpiMosi      => outSpiMosi_IO0,
     inSpiMiso       => inSpiMiso_IO1,
     outSpiWpB => outSpiWpB_IO2,
-    outSpiHoldB => outSpiHoldB_IO3
+    outSpiHoldB => outSpiHoldB_IO3,
+    
+    miso => miso,
+    mosi => mosi
   );
+  sck <= intSpiClk;
+  -- outSpiCsB <= outSpiCsB_i;
+  -- outSpiMosi_IO0 <= outSpiMosi_IO0_i;
+  -- inSpiMiso_IO1 <= inSpiMiso_IO1_i;
+  -- outSpiWpB_IO2 <= outSpiWpB_IO2_i;
+  -- outSpiHoldB_IO3 <= outSpiHoldB_IO3_i;
 STARTUPE2_inst : STARTUPE2
   port map (
     CLK => '0',
@@ -133,7 +148,7 @@ STARTUPE2_inst : STARTUPE2
   );
 Inst_LiteBus2SPI_fifo:entity work.bitstream_fifo
   PORT MAP (
-    rst => inUpdateControl(0),
+    rst => not inUpdateControl(0),
     wr_clk => clk_x2_i,
     rd_clk => clk_i,
     din => update_data,
@@ -145,5 +160,9 @@ Inst_LiteBus2SPI_fifo:entity work.bitstream_fifo
     almost_empty => open,
     valid => intSFPDataValid
   );
-
+  Inst_reload : entity work.reload
+    port map(
+    clk_in => clk_i,
+    trigger => re_load
+    );
 end Behavioral;

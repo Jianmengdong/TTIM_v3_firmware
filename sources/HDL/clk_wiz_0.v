@@ -26,6 +26,7 @@ module clk_wiz_0(
     output        clk_out2,
     output        clk_out3,
     output        clk_out4,
+    output        clk_out5,
     // Status and control signals
     output        locked
     );
@@ -74,6 +75,7 @@ module clk_wiz_0(
     .CLKOUT1_DUTY_CYCLE   (0.500),
     .CLKOUT1_USE_FINE_PS  ("FALSE"),
     .CLKOUT2_DIVIDE       (5),
+    .CLKOUT3_DIVIDE       (32),
     .CLKOUT2_PHASE        (0.000),
     .CLKOUT2_DUTY_CYCLE   (0.500),
     .CLKOUT2_USE_FINE_PS  ("FALSE"),
@@ -136,4 +138,7 @@ module clk_wiz_0(
   BUFG clkout4_buf
    (.O   (clk_out4),
     .I   (clkout0b_unused));
+  BUFG clkout5_buf
+   (.O   (clk_out5),
+    .I   (clkout3_unused));
 endmodule

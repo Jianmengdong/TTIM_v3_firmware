@@ -17,6 +17,7 @@ entity clk_time is
     local_clk_200M_o : out std_logic;
     local_clk_lock_o : out std_logic;
     sys_clk_o : out std_logic; --clock to MGT
+    sys_clk_32M_o : out std_logic;
     sys_clk_62M5_o : out std_logic;
     sys_clk_125M_o : out std_logic;
     sys_clk_200M_o : out std_logic;
@@ -77,7 +78,8 @@ Inst_sys_clk_gen: entity work.clk_wiz_0
     clk_out2 => sys_clk_125M,
     clk_out3 => sys_clk_200M_o,                
     clk_out4 => sys_clk_62M5_inv,
-    locked => sys_clk_lock
+    clk_out5 => sys_clk_32M_o,
+    locked => sys_clk_lock_o
     );
 Inst_local_led:entity work.LED_breath
     port map(
