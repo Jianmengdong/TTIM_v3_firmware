@@ -1,6 +1,7 @@
 from TTIM_v2 import *
 from time import sleep
 import platform
+import os
 
 
 def calibrate_ttc(ttim):
@@ -58,7 +59,10 @@ def main():
         print("Please use Python3.x!")
         exit()
     # ttim_ip = "192.168.10.11"
-    ttim = TTIM()
+    f = open(os.path.dirname(os.path.abspath(__file__)) + "/TTIM_ip.dat")
+    host_ip = f.readline().strip()
+    f.close()
+    ttim = TTIM(host_ip)
     print("*" * 20)
     print("  TTIM_v2 test script")
     print("")
@@ -228,16 +232,21 @@ def main():
             print("TTC RX ready: %s \n" % ttc_align)
             if version[2] == "3":
                 temp = ttim.get("temp_regs")
+                voltage = ttim.get("pwr_regs")
+                fpga_reg = ttim.get("fpga_regs")
+                fpga_temp = (fpga_reg >> 24) * 503.975 / 4096 - 273.15
+                vccint = (fpga_reg >> 12 & 0xfff) * 3.0 / 4096
+                vccaux = (fpga_reg & 0xfff) * 3.0 / 4096
                 temp3 = (temp & 0x1ff) * 0.5
                 temp2 = (temp >> 9 & 0x1ff) * 0.5
                 temp1 = (temp >> 18) * 0.5
-                voltage = ttim.get("pwr_regs")
                 current = (voltage >> 24) * 0.0025
                 VDD = (voltage >> 12 & 0xfff) * 0.025
                 Vttim = (voltage & 0xfff) * 0.001
                 print("Temperature:")
-                print("Left: %.1f ℃  Middle: %.1f ℃  Right: %.1f ℃" % (temp1, temp3, temp2))
-                print("Current: %.3f A   Vin: %.2f V   V_ttim: %.3f V" % (current, VDD, Vttim))
+                print("Left: %.1f ℃  Middle: %.1f ℃  Right: %.1f ℃  FPGA: %.1f ℃" % (temp1, temp3, temp2, fpga_temp))
+                print("BEC Current: %.3f A   Vin: %.2f V   V_ttim: %.3f V" % (current, VDD, Vttim))
+                print("FPGA VCCINT:  %.3f V   VCCAUX:  %.3f V" % (vccint, vccaux))
             sleep(1)
         elif cmd == "14":
             ptp = ttim.get("inject_reset")

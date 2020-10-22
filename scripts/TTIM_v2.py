@@ -6,10 +6,10 @@ from AddressTable import AddressTable
 
 class TTIM:
     """contains basic class method get, set, show_registers"""
-    def __init__(self):
-        f = open(os.path.dirname(os.path.abspath(__file__)) + "/TTIM_ip.dat")
-        host_ip = f.readline().strip()
-        f.close()
+    def __init__(self, host_ip):
+        # f = open(os.path.dirname(os.path.abspath(__file__)) + "/TTIM_ip.dat")
+        # host_ip = f.readline().strip()
+        # f.close()
         self.address_table = AddressTable(os.path.dirname(os.path.abspath(__file__)) + "/TTIM_v2_registers.dat")
         self.lite_bus = LiteBus(self.address_table, host_ip, 2000, 2000)
 

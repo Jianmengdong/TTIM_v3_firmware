@@ -1,48 +1,54 @@
 * RegName        RegAddr         RegMask       R   W     Description
-test_mode          0x41        ffffffffffff    1   1
-channel_mask       0x42        ffffffffffff    1   1
-tx2_en             0x43        ffffffffffff    1   1
-tx1_sel            0x44        ffffffffffff    1   1
-invert_tx1         0x45        ffffffffffff    1   1
-tap_cnt            0x46        ffffffffffff    1   1
-channel_sel        0x47        ffffffffffff    1   1
-load_tap           0x48        ffffffffffff    1   1
-inject_reset       0x49        ffffffffffff    1   1    B3 for ptp_enable
-pair_swap          0x4A        ffffffffffff    1   1
-en_trig_src        0x4B        ffffffffffff    1   1
+test_mode          0x41        ffffffffffff    1   1    0
+channel_mask       0x42        ffffffffffff    1   1    1
+tx2_en             0x43        ffffffffffff    1   1    2
+tx1_sel            0x44        ffffffffffff    1   1    3
+invert_tx1         0x45        ffffffffffff    1   1    4
+tap_cnt            0x46        ffffffffffff    1   1    5
+channel_sel        0x47        ffffffffffff    1   1    6
+load_tap           0x48        ffffffffffff    0   1    7
+trig_err           0x48        ffffffffffff    1   0    7
+inject_reset       0x49        ffffffffffff    1   1    B3 for ptp_enable 8
+pair_swap          0x4A        ffffffffffff    1   1    9
+en_trig_src        0x4B        ffffffffffff    1   1    10
 
-system_status      0x4C        ffffffffffff    1   0
+system_status      0x4C        ffffffffffff    1   0    11
 ttc_rst_error      0x4C        ffffffffffff    0   1    B2
 ttc_idle           0x4C        ffffffffffff    0   1    B1
 chb_req            0x4C        ffffffffffff    0   1    B0
 
-channel_rdy        0x4D        ffffffffffff    1   0
+channel_rdy        0x4D        ffffffffffff    1   0    12
 tap_incr           0x4D        ffffffffffff    0   1    B1
 tap_rst            0x4D        ffffffffffff    0   1    B0
 
-error_time1        0x4E        ffffffffffff    1   0
+error_time1        0x4E        ffffffffffff    1   0    13
 l1a_go_prbs        0x4E        ffffffffffff    0   1
 
-error_time2        0x4F        ffffffffffff    1   0
+error_time2        0x4F        ffffffffffff    1   0    14
 calib_enable       0x4F        ffffffffffff    0   1
 
-error_cnt1         0x50        ffffffffffff    1   0
+error_cnt1         0x50        ffffffffffff    1   0    15
 manual_trig        0x50        ffffffffffff    0   1
 
-error_cnt2         0x51        ffffffffffff    1   0
+error_cnt2         0x51        ffffffffffff    1   0    16
 sma_sel            0x51        ffffffffffff    0   1
-hit_toggle         0x52        ffffffffffff    1   1
-sbit_error_cnt     0x53        ffffffffffff    1   0
+hit_toggle         0x52        ffffffffffff    1   1    17
+sbit_error_cnt     0x53        ffffffffffff    1   0    18
 gen_fake_nhit      0x53        ffffffffffff    0   1
 
-dbit_error_cnt     0x54        ffffffffffff    1   0
-comm_error_cnt     0x55        ffffffffffff    1   0
-tap_eye            0x56        ffffffffffff    1   0
-l1a_tap_eye        0x57        ffffffffffff    1   0
-tap_err_cnt        0x58        ffffffffffff    1   0
-threshold          0x59        ffffffffffff    1   1
-trig_period        0x5A        ffffffffffff    1   1
-temp_regs          0x5B        ffffffffffff    1   0
-pwr_regs           0x5C        ffffffffffff    1   0
-hit_debug          0x5D        ffffffffffff    1   0
-l1a_debug          0x5E        ffffffffffff    1   0
+dbit_error_cnt     0x54        ffffffffffff    1   0    19
+loop_test          0x54        ffffffffffff    0   1
+comm_error_cnt     0x55        ffffffffffff    1   0    20
+tap_eye            0x56        ffffffffffff    1   0    21
+l1a_tap_eye        0x57        ffffffffffff    1   0    22
+tap_err_cnt        0x58        ffffffffffff    1   0    23
+threshold          0x59        ffffffffffff    1   1    24
+trig_period        0x5A        ffffffffffff    1   1    25
+temp_regs          0x5B        ffffffffffff    1   0    26
+pwr_regs           0x5C        ffffffffffff    1   0    27
+hit_debug          0x5D        ffffffffffff    1   0    28
+l1a_debug          0x5E        ffffffffffff    1   0    29
+trig_window        0x5F        ffffffffffff    1   1    30
+fpga_regs          0x60        ffffffffffff    1   0    31
+trig_rate          0x61        ffffffffffff    1   0    32
+loss_counter       0x62        ffffffffffff    1   0    33

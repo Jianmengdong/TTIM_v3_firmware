@@ -1,12 +1,17 @@
 from TTIM_v2 import *
 # from time import sleep
+import os
 
 
 def main():
+    f = open(os.path.dirname(os.path.abspath(__file__)) + "/TTIM_ip.dat")
+    host_ip = f.readline().strip()
+    f.close()
+    ttim = TTIM(host_ip)
     # ttim_ip = "192.168.10.11"
-    ttim = TTIM()
+    # invert_tx1 = ec521826eca(test_base)  f13ade7d9135(BEC)
     print("*" * 20)
-    print("  TTIM_v2 console")
+    print("  TTIM console")
     print("")
     print("Please input command(input 'quit' to exit: \n"
           "To read a register, just input the register name;\n"

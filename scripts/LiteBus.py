@@ -81,7 +81,7 @@ class LiteBus:
         return 0  #
 
     def program_status(self):
-        transaction = 0x55
+        transaction = 0x55550000
         trans_str = binascii.unhexlify(hex(transaction)[2:])
         self.__socket.sendto(trans_str, self.__host_addr)
         raw_data = self.__socket.recvfrom(1024)[0]
@@ -89,9 +89,9 @@ class LiteBus:
         return status
 
     def program_set(self, command):
-        command_int = int(command, 16)
+        # command_int = int(command, 16)
         # transaction = TransElement.program_transaction(command)
-        transaction = (0x55 << 24) | command_int
+        transaction = (0x55 << 24) | command
         trans_str = binascii.unhexlify(hex(transaction)[2:])
         self.__socket.sendto(trans_str, self.__host_addr)
         raw_data = self.__socket.recvfrom(1024)[0]
