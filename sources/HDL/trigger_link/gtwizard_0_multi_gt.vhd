@@ -186,6 +186,9 @@ port
     gt0_txresetdone_out                     : out  std_logic;
     ----------------- Transmit Ports - TX Polarity Control Ports ---------------
     gt0_txpolarity_in                       : in   std_logic;
+    
+    loop_test : in std_logic;
+    prbs_err : out std_logic;
 
 
     --____________________________COMMON PORTS________________________________
@@ -350,7 +353,9 @@ port
     ------------- Transmit Ports - TX Initialization and Reset Ports -----------
     txresetdone_out                         : out  std_logic;
     ----------------- Transmit Ports - TX Polarity Control Ports ---------------
-    txpolarity_in                           : in   std_logic
+    txpolarity_in                           : in   std_logic;
+    loop_test : in std_logic;
+    prbs_err : out std_logic
 
 
 );
@@ -509,7 +514,9 @@ gt0_gtwizard_0_i : gtwizard_0_GT
         ------------- Transmit Ports - TX Initialization and Reset Ports -----------
         txresetdone_out                 =>      gt0_txresetdone_out,
         ----------------- Transmit Ports - TX Polarity Control Ports ---------------
-        txpolarity_in                   =>      gt0_txpolarity_in
+        txpolarity_in                   =>      gt0_txpolarity_in,
+     loop_test => loop_test,
+     prbs_err => prbs_err
 
     );
 

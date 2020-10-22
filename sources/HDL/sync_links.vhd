@@ -16,6 +16,7 @@ entity sync_links is
     BEC2GCU_1_N : out std_logic_vector(48 downto 1);
     BEC2GCU_2_P : out std_logic_vector(48 downto 1);
     BEC2GCU_2_N : out std_logic_vector(48 downto 1);
+    reset_sync_links : in std_logic_vector(47 downto 0);
     GCU2BEC_1_P : in std_logic_vector(48 downto 1);
     GCU2BEC_1_N : in std_logic_vector(48 downto 1);
     GCU2BEC_2_P : in std_logic_vector(48 downto 1);
@@ -29,8 +30,11 @@ entity sync_links is
     clk_200 : in std_logic;
     sys_clk_lock : in std_logic;
     reset_i : in std_logic;
+    loop_test : in std_logic;
     test_mode_i : in std_logic_vector(47 downto 0);
     l1a_i : in std_logic;
+    pps_i   : in std_logic;
+    trig_rate_o : out std_logic_vector(23 downto 0);
     nhit_gcu_o : out t_array2(47 downto 0);
     timestamp_i : in std_logic_vector(47 downto 0);
     ch_mask_i : in std_logic_vector(47 downto 0);
@@ -62,6 +66,7 @@ entity sync_links is
     sbit_err_count : out std_logic_vector(31 downto 0);
     dbit_err_count : out std_logic_vector(31 downto 0);
     comm_err_count : out std_logic_vector(31 downto 0);
+    loss_counter_o : out std_logic_vector(31 downto 0);
     eye_v : out std_logic_vector(31 downto 0);
     l1a_eye_v : out std_logic_vector(31 downto 0);
     s_tap_error_count : out std_logic_vector(31 downto 0)
@@ -110,6 +115,7 @@ i_channel_map:entity work.channel_map
     BEC2GCU_2_P => BEC2GCU_2_P,
     BEC2GCU_2_N => BEC2GCU_2_N,
     datao_i => bec2gcu_2_i,
+    reset_sync_links => reset_sync_links,
     --======================--
     GCU2BEC_1_P => GCU2BEC_1_P,
     GCU2BEC_1_N => GCU2BEC_1_N,
@@ -173,6 +179,7 @@ i_prbs_chk:entity work.prbs_check
     port map(
     clk_i => clk_x2_i,
     reset_i => reset_i,
+    loop_test => loop_test,
     en_i => test_mode_i,
     global_time_i => timestamp_i,
     prbs_i1 => gcu2bec_1_d,
@@ -321,10 +328,13 @@ ttc_trg_time_1 : entity work.ttc_trg_time
       rst_i           => not sys_clk_lock,
       ttctx_ready_i   => s_ttctx_ready,
       local_time_i    => timestamp_i,
+    pps_i => pps_i,
+    trig_rate_o => trig_rate_o,
       local_trigger_i => l1a_i,
       chb_grant_i     => s_chb_grant8,
       chb_req_o       => s_chb_req8,
       ttc_long_o      => s_long_frame_in7,
+      loss_counter_o => loss_counter_o,
       s_local_trigger_pulse_o => open,
       time_to_send    => open
       );

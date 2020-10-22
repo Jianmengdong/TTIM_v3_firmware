@@ -34,6 +34,7 @@ entity channel_map is
     BEC2GCU_2_P : out std_logic_vector(47 downto 0);
     BEC2GCU_2_N : out std_logic_vector(47 downto 0);
     datao_i     : in std_logic_vector(47 downto 0);
+    reset_sync_links : in std_logic_vector(47 downto 0);
     -- rx1 data, pair 3/6, color green
     GCU2BEC_1_P : in std_logic_vector(47 downto 0);
     GCU2BEC_1_N : in std_logic_vector(47 downto 0);
@@ -57,23 +58,25 @@ architecture Behavioral of channel_map is
 
 begin
 g_sync_link: for i in 47 downto 0 generate
-    i_bec2gcu1: OBUFDS
+    i_bec2gcu1: OBUFTDS
         generic map(
         SLEW => "SLOW"
         )
         port map(
         I => clko_i(i),
+        T => reset_sync_links(i),
         O => BEC2GCU_1_P(i),
         OB => BEC2GCU_1_N(i)
         );
     --bec2gcu_1_r(i) <= datao_i(i) when inv_o_1(i) = '0' else not datao_i(i);
     --bec2gcu_1_i(i) <= clko_i when tx1_sel(i) = '0' else bec2gcu_1_r(i);
-    i_bec2gcu2: OBUFDS
+    i_bec2gcu2: OBUFTDS
         generic map(
         SLEW => "SLOW"
         )
         port map(
         I => bec2gcu_2_i(i),
+        T => reset_sync_links(i),
         O => BEC2GCU_2_P(i),
         OB => BEC2GCU_2_N(i)
         );

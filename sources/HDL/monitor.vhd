@@ -19,12 +19,17 @@ entity monitor is
     read_reg : in std_logic;
     SCL : out std_logic;
     SDA : inout std_logic;
+    vp_in : in std_logic;
+    vn_in : in std_logic;
     temp_reg1 : out std_logic_vector(8 downto 0);
     temp_reg2 : out std_logic_vector(8 downto 0);
     temp_reg3 : out std_logic_vector(8 downto 0);
     sense_reg : out std_logic_vector(11 downto 0);
     vin_reg : out std_logic_vector(11 downto 0);
     adin_reg : out std_logic_vector(11 downto 0);
+    temp_die_reg : out std_logic_vector(11 downto 0);
+    vccint_reg : out std_logic_vector(11 downto 0);
+    vccaux_reg : out std_logic_vector(11 downto 0);
     fsm_o : out std_logic_vector(3 downto 0)
     );
 end monitor;
@@ -37,17 +42,23 @@ architecture Behavioral of monitor is
     constant SENSE : std_logic_vector(7 downto 0) := x"14"; -- delta sense
     constant VIN : std_logic_vector(7 downto 0) := x"1E"; -- input voltage
     constant ADIN : std_logic_vector(7 downto 0) := x"28"; -- voltage to TTIM
+    constant TEMP_DIE : std_logic_vector(6 downto 0) := "0000000";
+    constant VCCINT : std_logic_vector(6 downto 0) := "0000001";
+    constant VCCAUX : std_logic_vector(6 downto 0) := "0000010";
     
     type t_state is (st0_idle,st1_start,st2_sendAddr,st_read,st_read1,st_read2,
-                    st_write);
+                    st_write,st_dread,st_dread1,st_dread2);
     signal state,state_after_sendAddr :t_state;
     signal start,stop,rp_start,scl_i,sda_i,sda_o,rw,byte_done : std_logic;
     signal slave_addr,reg_addr,data_i,data_o,addr_i : std_logic_vector(7 downto 0);
     signal read_reg_r,read_reg_s,error : std_logic;
-    signal temp_reg : t_array16(5 downto 0);
-    signal sel : integer range 0 to 6 := 0;--std_logic_vector(1 downto 0);
+    signal temp_reg : t_array16(9 downto 0);
+    signal sel : integer range 0 to 9 := 0;--std_logic_vector(1 downto 0);
     signal fsm : std_logic_vector(3 downto 0);
     signal busy,ack_inv,inv_ack : std_logic;
+    signal daddr : std_logic_vector(6 downto 0);
+    signal den,drdy : std_logic;
+    signal do : std_logic_vector(15 downto 0);
 begin
 temp_reg1 <= temp_reg(0)(15 downto 7);
 temp_reg2 <= temp_reg(1)(15 downto 7);
@@ -55,6 +66,9 @@ temp_reg3 <= temp_reg(2)(15 downto 7);
 sense_reg <= temp_reg(3)(15 downto 4);
 vin_reg <= temp_reg(4)(15 downto 4);
 adin_reg <= temp_reg(5)(15 downto 4);
+temp_die_reg <= temp_reg(6)(15 downto 4);
+vccint_reg <= temp_reg(7)(15 downto 4);
+vccaux_reg <= temp_reg(8)(15 downto 4);
 fsm_o <= fsm;
 Inst_iobuf:IOBUF
     port map(
@@ -96,6 +110,20 @@ Inst_i2c:entity work.i2c_master
     busy => busy
     );
     SCL <= scl_i;
+-- XADC inst
+Inst_xadc: entity work.xadc_wiz_0
+    port map(
+    daddr_in => daddr,
+    den_in => den,
+    di_in => (others => '0'),
+    dwe_in => '0',
+    do_out => do,
+    drdy_out => drdy,
+    dclk_in => clk_i,
+    reset_in => rst_i,
+    vp_in => vp_in,
+    vn_in => vn_in
+    );
 -- FSM to perform read procedure
 P_read_regs:process(clk_i)
     begin
@@ -105,6 +133,7 @@ P_read_regs:process(clk_i)
         sel <= 0;
         ack_inv <= '0';
         inv_ack <= '0';
+        den <= '0';
     elsif rising_edge(clk_i) then
         case state is
             when st0_idle =>
@@ -116,6 +145,7 @@ P_read_regs:process(clk_i)
                 fsm <= x"0";
                 ack_inv <= '0';
                 inv_ack <= '0';
+                den <= '0';
                 if read_reg_s = '1' then
                     state <= st1_start;
                 end if;
@@ -175,8 +205,8 @@ P_read_regs:process(clk_i)
                     ack_inv <= '0';
                     state <= st1_start;
                 else
-                    sel <= 0;
-                    state <= st0_idle;
+                    --sel <= 0;
+                    state <= st_dread;
                 end if;
                 fsm <= x"5";
             when st_write => 
@@ -190,7 +220,26 @@ P_read_regs:process(clk_i)
                     state <= st0_idle;
                 end if;
                 fsm <= x"6";
-                
+            when st_dread =>
+                den <= '1';
+                state <= st_dread1;
+                fsm <= x"7";
+            when st_dread1 =>
+                den <= '0';
+                if drdy = '1' then
+                    temp_reg(sel) <= do;
+                    state <= st_dread2;
+                end if;
+                fsm <= x"8";
+            when st_dread2 => 
+                if sel < 9 then
+                    sel <= sel + 1;
+                    state <= st_dread;
+                else
+                    sel <= 0;
+                    state <= st0_idle;
+                end if;
+                fsm <= x"9";
             when others =>
                 state <= st0_idle;
         end case;
@@ -212,6 +261,9 @@ P_read_regs:process(clk_i)
     reg_addr <= SENSE when sel = 3 else 
                   VIN when sel = 4 else 
                   ADIN;
+    daddr <= VCCAUX when sel = 8 else
+             VCCINT   when sel = 7 else
+             TEMP_DIE;
 -- Inst_ila: entity work.ila_2
     -- port map(
     -- clk => clk_i,

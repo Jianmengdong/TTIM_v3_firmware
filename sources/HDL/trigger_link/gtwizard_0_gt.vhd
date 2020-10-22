@@ -185,7 +185,10 @@ port
     ------------- Transmit Ports - TX Initialization and Reset Ports -----------
     txresetdone_out                         : out  std_logic;
     ----------------- Transmit Ports - TX Polarity Control Ports ---------------
-    txpolarity_in                           : in   std_logic
+    txpolarity_in                           : in   std_logic;
+    
+    loop_test : in std_logic;
+    prbs_err : out std_logic
 
 
 );
@@ -218,6 +221,7 @@ architecture RTL of gtwizard_0_GT is
     signal txkerr_float_i                   :   std_logic_vector(5 downto 0);
     signal txrundisp_float_i                :   std_logic_vector(5 downto 0);
     signal rxstartofseq_float_i             :   std_logic;
+    signal prbs_sel : std_logic_vector(2 downto 0);
 --******************************** Main Body of Code***************************
                        
 begin                      
@@ -609,8 +613,8 @@ begin
         ------------------ Receive Ports - FPGA RX interface Ports -----------------
         RXDATA                          =>      rxdata_i,
         ------------------- Receive Ports - Pattern Checker Ports ------------------
-        RXPRBSERR                       =>      open,
-        RXPRBSSEL                       =>      tied_to_ground_vec_i(2 downto 0),
+        RXPRBSERR                       =>      prbs_err,
+        RXPRBSSEL                       =>      prbs_sel,
         ------------------- Receive Ports - Pattern Checker ports ------------------
         RXPRBSCNTRESET                  =>      tied_to_ground_i,
         -------------------- Receive Ports - RX  Equalizer Ports -------------------
@@ -827,13 +831,13 @@ begin
         ------------------ Transmit Ports - TX8b/10b Encoder Ports -----------------
         TX8B10BBYPASS                   =>      tied_to_ground_vec_i(7 downto 0),
         ------------------ Transmit Ports - pattern Generator Ports ----------------
-        TXPRBSSEL                       =>      tied_to_ground_vec_i(2 downto 0),
+        TXPRBSSEL                       =>      prbs_sel,
         ----------------------- Tx Configurable Driver  Ports ----------------------
         TXQPISENN                       =>      open,
         TXQPISENP                       =>      open
 
      );
-
+    prbs_sel <= "00" & loop_test;
 
  end RTL;
 

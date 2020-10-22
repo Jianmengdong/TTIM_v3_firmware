@@ -88,7 +88,7 @@ end TTIM_v3_top;
 architecture Behavioral of TTIM_v3_top is
 
     constant hw_version : std_logic_vector(15 downto 0) := x"0300"; --major[7:4] minor[3:0]
-    constant fw_version : std_logic_vector(15 downto 0) := x"FFFF"; --major[7:4] minor[3:0]
+    constant fw_version : std_logic_vector(15 downto 0) := x"0200"; --major[7:4] minor[3:0]
                                                                     --x"FFFF" for golden image
     
     signal pps_i : std_logic;
@@ -135,14 +135,21 @@ architecture Behavioral of TTIM_v3_top is
     signal s_tap_rst,s_tap_incr,s_l1a_tap_calib_enable,s_l1a_go_prbs,ttc_rst_error,ttc_idle : std_logic;
     signal rx_aligned,manual_trig,trig_req,fake_hit : std_logic;
     signal loss_counter,s_eye_v,s_l1a_eye_v,s_tap_error_count: std_logic_vector(31 downto 0);
-    signal s_1bit_err_count,s_2bit_err_count,s_comm_err_count : std_logic_vector(31 downto 0);
+    signal s_1bit_err_count,s_2bit_err_count,s_comm_err_count,trig_error_cnt : std_logic_vector(31 downto 0);
     signal monitor_fsm : std_logic_vector(3 downto 0);
     signal temp_reg1,temp_reg2,temp_reg3 : std_logic_vector(8 downto 0);
     signal sense_reg,vin_reg,adin_reg,temp_die_reg,vccint_reg,vccaux_reg : std_logic_vector(11 downto 0);
     signal hit_debug,l1a_debug : std_logic_vector(47 downto 0);
     signal trig_window_i,v_trig_window : std_logic_vector(3 downto 0);
     signal trig_rate_s,trig_rate_t : std_logic_vector(23 downto 0);
-    signal sys_clk_32M_i,re_load : std_logic;
+    signal sys_clk_32M_i,re_load,loop_test : std_logic;
+    signal tx1_t, tx2_t,sys_clkg : std_logic;
+    signal reset_sync_links : std_logic_vector(47 downto 0);
+    signal reset_trig_link,start_wr_done : std_logic;
+    signal led_i : std_logic_vector(1 downto 0);
+    signal startup_status : std_logic_vector(2 downto 0);
+    signal retry_cnt : std_logic_vector(3 downto 0);
+    signal reset_trig,trig_loop_test : std_logic;
 begin
 --===========================================--
 --     clock generation
@@ -154,6 +161,7 @@ Inst_clk_time: entity work.clk_time
     wr_clk_p => wr_clk_p,
     wr_clk_n => wr_clk_n,
     sys_clk_o => sys_clk_i,  --IBUFDS_GTE2, for MGT
+    sys_clkg_o => sys_clkg,
     pps_i => pps_i,
     local_clk_62M5_o => local_clk_62M5_i,
     local_clk_125M_o => local_clk_125M_i,
@@ -164,13 +172,17 @@ Inst_clk_time: entity work.clk_time
     sys_clk_125M_o => sys_clk_125M_i,
     sys_clk_200M_o => sys_clk_200M_i,
     sys_clk_lock_o => sys_clk_lock_i,
-    led_o => LED
+    start_wr_done => start_wr_done,
+    retry_cnt => retry_cnt,
+    led_o => led_i
     );
+    LED(1) <= led_i(1);
 --========================================--
 --  interface with mini-WR
 Inst_wr_interface:entity work.wr_interface
     port map(
     sys_clk_i => sys_clk_125M_i,
+    sys_clkg => sys_clkg,
     reset_i => not sys_clk_lock_i,
     PPS_IN_P => PPS_IN_P,
     PPS_IN_N => PPS_IN_N,
@@ -223,6 +235,143 @@ Inst_regs:entity work.control_registers
     register_o => register_array,
     register_i => register_array_r
     );
+
+--========================================--
+--  trigger generator
+Inst_trig_gen:entity work.trigger_gen
+    port map(
+    clk_i => sys_clk_62M5_i,
+    reset_i => not ttctx_ready,
+    reset_event_cnt_i => '0',
+    pps_i => pps_i,
+    trig_rate_o => trig_rate_t,
+    en_trig_i => en_trig_i,
+    ext_trig_i => ext_trig_i,
+    l1a_o => l1a_i,
+    trig_i => trig_i,
+    trig_window_i => trig_window_i,
+    global_time_i => timestamp_i,
+    period_i => period_i,
+    threshold_i => threshold_i,
+    hit_i => hit_i,
+    nhit_o => nhit_i,
+    fake_hit => fake_hit
+    --trig_info_o => open
+    );
+    ext_trig_i(0) <= SMA(1);
+    ext_trig_i(1) <= manual_trig;
+--========================================--
+--  trigger link with RMU
+Inst_trig_link:entity work.trigger_link
+    port map(
+    SFP_RX_P => trigger_link_rx_p,
+    SFP_RX_N => trigger_link_rx_n,
+    SFP_TX_P => trigger_link_tx_p,
+    SFP_TX_N => trigger_link_tx_n,
+    refclk_i => sys_clk_i,
+    trig_o => trig_i,
+    nhit_i => nhit_i,
+    clk_i => sys_clk_62M5_i,
+    reset_i => reset_trig_link or reset_trig,
+    loop_test => trig_loop_test,
+    reset_err => reset_err,
+    prbs_error => trig_error_cnt,
+    rx_aligned => rx_aligned
+    );
+--===========================================--
+--     sync link to GCU
+Inst_sync_link:entity work.sync_links
+    port map(
+    BEC2GCU_1_P => BEC2GCU_1_P,
+    BEC2GCU_1_N => BEC2GCU_1_N,
+    BEC2GCU_2_P => BEC2GCU_2_P,
+    BEC2GCU_2_N => BEC2GCU_2_N,
+    reset_sync_links => reset_sync_links,
+    GCU2BEC_1_P => GCU2BEC_1_P,
+    GCU2BEC_1_N => GCU2BEC_1_N,
+    GCU2BEC_2_P => GCU2BEC_2_P,
+    GCU2BEC_2_N => GCU2BEC_2_N,
+    gcu2bec_1_o => gcu2bec_1,
+    gcu2bec_2_o => gcu2bec_2,
+    clk_i       => sys_clk_62M5_i,
+    clk_x2_i    => sys_clk_125M_i,
+    clk_200     => sys_clk_200M_i,
+    sys_clk_lock => sys_clk_lock_i,
+    test_mode_i => test_mode_i,
+    reset_i     => reset_err,
+    loop_test => loop_test,
+    pps_i => pps_i,
+    trig_rate_o => trig_rate_s,
+    l1a_i       => l1a_i,
+    nhit_gcu_o  => hit_i,
+    timestamp_i => timestamp_48b,
+    loss_counter_o => loss_counter,
+    ch_mask_i   => ch_mask_i,
+    ch_ready_o  => ch_ready_i,
+    tx2_en      => tx2_en,
+    tx1_sel     => tx1_sel,
+    inv_o_1     => inv_o_1,
+    ch_sel_i    => ch_sel_i,
+    tap_cnt_i   => tap_cnt_i,
+    s_chb_grant1 => s_chb_grant1,
+    s_chb_req1 => s_chb_req1,
+    ttc_idle => ttc_idle,
+    ttc_rst_error => ttc_rst_error,
+    s_1588ptp_enable => s_1588ptp_enable,
+    s_tap_calib_enable => s_tap_calib_enable,
+    s_tap_rst => s_tap_rst,
+    s_tap_incr => s_tap_incr,
+    s_l1a_tap_calib_enable => s_l1a_tap_calib_enable,
+    s_l1a_go_prbs => s_l1a_go_prbs,
+    s_hit_toggle => s_hit_toggle,
+    ld_i        => ld_i,
+    inj_err     => inj_err,
+    pair_swap   => pair_swap,
+    ttctx_ready => ttctx_ready,
+    error_time1_o    => error_time1_o,
+    error_time2_o    => error_time2_o,
+    error_counter1_o => error_counter1_o,
+    error_counter2_o => error_counter2_o,
+    sbit_err_count    => s_1bit_err_count,
+    dbit_err_count    => s_2bit_err_count,
+    comm_err_count    => s_comm_err_count,
+    eye_v => s_eye_v,
+    l1a_eye_v => s_l1a_eye_v,
+    s_tap_error_count => s_tap_error_count
+    );
+    ch_sel <= to_integer(unsigned(ch_sel_i));
+--=================================--
+--  test signals
+Inst_monitor: entity work.monitor
+    port map(
+    clk_i => sys_clk_62M5_i,
+    rst_i => reset_err,
+    read_reg => timestamp_i(29),
+    SCL => SCL,
+    SDA => SDA,
+    vp_in => vp_in,
+    vn_in => vn_in,
+    temp_reg1 => temp_reg1,
+    temp_reg2 => temp_reg2,
+    temp_reg3 => temp_reg3,
+    sense_reg => sense_reg,
+    vin_reg => vin_reg,
+    adin_reg => adin_reg,
+    temp_die_reg => temp_die_reg,
+    vccint_reg => vccint_reg,
+    vccaux_reg => vccaux_reg,
+    fsm_o => monitor_fsm
+    );
+Inst_startup: entity work.startup
+    port map(
+    clk_in => local_clk_125M_i,
+    local_clk_lock => local_clk_lock_i,
+    start_wr_done => start_wr_done,
+    reset_sync_links => reset_sync_links,
+    reset_trig_link => reset_trig_link,
+    startup_status => startup_status
+    );
+    LED(2) <= startup_status(2);
     -- register map----
     
     test_mode_i <= register_array(0) when use_vio = '0' else v_test_mode;
@@ -235,6 +384,7 @@ Inst_regs:entity work.control_registers
     ld_i <= register_array(7)(1 downto 0) when use_vio = '0' else v_ld;
     reset_err <= register_array(8)(0) when use_vio = '0' else v_reset_err;
     inj_err <= register_array(8)(1) when use_vio = '0' else v_inj_err;
+    reset_trig <= register_array(8)(2);-- when use_vio = '0' else v_inj_err;
     s_1588ptp_enable <= register_array(8)(3) when use_vio = '0' else v_1588_enable;
     pair_swap <= register_array(9) when use_vio = '0' else v_pair_swap;
     en_trig_i <= register_array(10)(4 downto 0) when use_vio = '0' else v_en_trig;
@@ -250,6 +400,8 @@ Inst_regs:entity work.control_registers
     sma_sel <= register_array(16)(0) when use_vio = '0' else v_sma_sel;
     s_hit_toggle <= register_array(17) when use_vio = '0' else v_hit_toggle;
     fake_hit <= register_array(18)(0) when use_vio = '0' else v_fake_hit;
+    loop_test <= register_array(19)(0);-- when use_vio = '0' else v_fake_hit;
+    trig_loop_test <= register_array(19)(1);-- when use_vio = '0' else v_fake_hit;
     threshold_i <= register_array(24)(7 downto 0) when use_vio = '0' else v_threshold;
     period_i <= register_array(25)(31 downto 0) when use_vio = '0' else v_period;
     trig_window_i <= register_array(30)(3 downto 0) when use_vio = '0' else v_trig_window;
@@ -260,7 +412,7 @@ Inst_regs:entity work.control_registers
     register_array_r(4) <= inv_o_1;
     register_array_r(5) <= x"0000000000"&"0"&tap_cnt_i;
     register_array_r(6) <= x"0000000000"&"00"&ch_sel_i;
-    register_array_r(7) <= x"00000000000"&"00"&ld_i;
+    register_array_r(7) <= x"0000" & trig_error_cnt;
     register_array_r(8) <= x"00000000000"&"0"&s_1588ptp_enable&inj_err&reset_err;
     register_array_r(9) <= pair_swap;
     register_array_r(10) <= x"0000000000"&"000"&en_trig_i;
@@ -332,6 +484,7 @@ Inst_regs:entity work.control_registers
     probe_out25 => v_trig_window
     );
     wr_reset <= '1';
+
     Inst_ila:entity work.ila_0
     port map(
     clk => sys_clk_125M_i,
@@ -353,131 +506,11 @@ Inst_regs:entity work.control_registers
     probe15 => nhit_i
     --probe16 => monitor_fsm
     );
---========================================--
---  trigger generator
-Inst_trig_gen:entity work.trigger_gen
-    port map(
-    clk_i => sys_clk_62M5_i,
-    reset_i => not ttctx_ready,
-    reset_event_cnt_i => '0',
-    pps_i => pps_i,
-    trig_rate_o => trig_rate_t,
-    en_trig_i => en_trig_i,
-    ext_trig_i => ext_trig_i,
-    l1a_o => l1a_i,
-    trig_i => trig_i,
-    trig_window_i => trig_window_i,
-    global_time_i => timestamp_i,
-    period_i => period_i,
-    threshold_i => threshold_i,
-    hit_i => hit_i,
-    nhit_o => nhit_i,
-    fake_hit => fake_hit
-    --trig_info_o => open
-    );
-    ext_trig_i(0) <= SMA(1);
-    ext_trig_i(1) <= manual_trig;
---========================================--
---  trigger link with RMU
-Inst_trig_link:entity work.trigger_link
-    port map(
-    SFP_RX_P => trigger_link_rx_p,
-    SFP_RX_N => trigger_link_rx_n,
-    SFP_TX_P => trigger_link_tx_p,
-    SFP_TX_N => trigger_link_tx_n,
-    refclk_i => sys_clk_i,
-    trig_o => trig_i,
-    nhit_i => nhit_i,
-    clk_i => sys_clk_62M5_i,
-    reset_i => not sys_clk_lock_i,
-    rx_aligned => rx_aligned
-    );
---===========================================--
---     sync link to GCU
-Inst_sync_link:entity work.sync_links
-    port map(
-    BEC2GCU_1_P => BEC2GCU_1_P,
-    BEC2GCU_1_N => BEC2GCU_1_N,
-    BEC2GCU_2_P => BEC2GCU_2_P,
-    BEC2GCU_2_N => BEC2GCU_2_N,
-    GCU2BEC_1_P => GCU2BEC_1_P,
-    GCU2BEC_1_N => GCU2BEC_1_N,
-    GCU2BEC_2_P => GCU2BEC_2_P,
-    GCU2BEC_2_N => GCU2BEC_2_N,
-    gcu2bec_1_o => gcu2bec_1,
-    gcu2bec_2_o => gcu2bec_2,
-    clk_i       => sys_clk_62M5_i,
-    clk_x2_i    => sys_clk_125M_i,
-    clk_200     => sys_clk_200M_i,
-    sys_clk_lock => sys_clk_lock_i,
-    test_mode_i => test_mode_i,
-    reset_i     => reset_err,
-    pps_i => pps_i,
-    trig_rate_o => trig_rate_s,
-    l1a_i       => l1a_i,
-    nhit_gcu_o  => hit_i,
-    timestamp_i => timestamp_48b,
-    loss_counter_o => loss_counter,
-    ch_mask_i   => ch_mask_i,
-    ch_ready_o  => ch_ready_i,
-    tx2_en      => tx2_en,
-    tx1_sel     => tx1_sel,
-    inv_o_1     => inv_o_1,
-    ch_sel_i    => ch_sel_i,
-    tap_cnt_i   => tap_cnt_i,
-    s_chb_grant1 => s_chb_grant1,
-    s_chb_req1 => s_chb_req1,
-    ttc_idle => ttc_idle,
-    ttc_rst_error => ttc_rst_error,
-    s_1588ptp_enable => s_1588ptp_enable,
-    s_tap_calib_enable => s_tap_calib_enable,
-    s_tap_rst => s_tap_rst,
-    s_tap_incr => s_tap_incr,
-    s_l1a_tap_calib_enable => s_l1a_tap_calib_enable,
-    s_l1a_go_prbs => s_l1a_go_prbs,
-    s_hit_toggle => s_hit_toggle,
-    ld_i        => ld_i,
-    inj_err     => inj_err,
-    pair_swap   => pair_swap,
-    ttctx_ready => ttctx_ready,
-    error_time1_o    => error_time1_o,
-    error_time2_o    => error_time2_o,
-    error_counter1_o => error_counter1_o,
-    error_counter2_o => error_counter2_o,
-    sbit_err_count    => s_1bit_err_count,
-    dbit_err_count    => s_2bit_err_count,
-    comm_err_count    => s_comm_err_count,
-    eye_v => s_eye_v,
-    l1a_eye_v => s_l1a_eye_v,
-    s_tap_error_count => s_tap_error_count
-    );
-    ch_sel <= to_integer(unsigned(ch_sel_i));
 --=================================--
 --  test signals
-Inst_monitor: entity work.monitor
-    port map(
-    clk_i => sys_clk_62M5_i,
-    rst_i => reset_err,
-    read_reg => timestamp_i(29),
-    SCL => SCL,
-    SDA => SDA,
-    vp_in => vp_in,
-    vn_in => vn_in,
-    temp_reg1 => temp_reg1,
-    temp_reg2 => temp_reg2,
-    temp_reg3 => temp_reg3,
-    sense_reg => sense_reg,
-    vin_reg => vin_reg,
-    adin_reg => adin_reg,
-    temp_die_reg => temp_die_reg,
-    vccint_reg => vccint_reg,
-    vccaux_reg => vccaux_reg,
-    fsm_o => monitor_fsm
-    );
---=================================--
---  test signals
-SMA(0) <= gcu2bec_1(ch_sel) when sma_sel = '0' else gcu2bec_2(ch_sel);
-SMA(1) <= 'Z';
-
+-- SMA(0) <= gcu2bec_1(ch_sel) when sma_sel = '0' else gcu2bec_2(ch_sel);
+-- SMA(1) <= 'Z';
+SMA(0) <= pps_i;
+SMA(1) <= sys_clk_62M5_i;
 test_pin <= "ZZZZ";
 end Behavioral;

@@ -17,6 +17,7 @@
 -- Revisions  :
 -- Date        Version  Author  Description
 -- 2019-04-16  1.0      filippo	Created
+-- 2020-06-26  2.0      Jianmeng  add fifo to lactch trigger time, add loss of trigger counter
 -------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
@@ -29,11 +30,14 @@ entity ttc_trg_time is
     clk_i           : in  std_logic;
     rst_i           : in  std_logic;
     ttctx_ready_i   : in  std_logic;
+    pps_i   : in std_logic;
+    trig_rate_o : out std_logic_vector(23 downto 0);
     local_time_i    : in  std_logic_vector(47 downto 0);
     local_trigger_i : in  std_logic;
     chb_grant_i     : in  std_logic;
     chb_req_o       : out std_logic;
     ttc_long_o      : out t_ttc_long_frame;
+    loss_counter_o : out std_logic_vector(31 downto 0);
    -- debug
     s_local_trigger_pulse_o : out std_logic;
     time_to_send    : out std_logic_vector(31 downto 0));
@@ -43,7 +47,7 @@ end entity ttc_trg_time;
 
 architecture  rtl of ttc_trg_time is 
 
-  signal s_trg_timestamp : std_logic_vector(47 downto 0);
+  signal s_trg_timestamp,dout : std_logic_vector(47 downto 0);
 
   type t_trg_time_fsm is (st0_idle,
                           st0_catch_trg_timestamp,
@@ -67,6 +71,10 @@ architecture  rtl of ttc_trg_time is
   signal s_ttctx_ready : std_logic;
   signal s_strobe : std_logic;
   signal s_local_trigger_pulse : std_logic;
+  signal loss_counter : unsigned(31 downto 0);
+  signal rd_en,full,empty,valid : std_logic;
+    signal trig_rate : unsigned(23 downto 0);
+    signal pps_r,pps_r2 : std_logic;
   --attribute dont_touch : string;
   --attribute mark_debug : string;
   --attribute dont_touch of s_trg_timestamp : signal is "true";
@@ -110,17 +118,39 @@ begin  -- architecture  rtl
 -- should change this to fifo. When fifo not empty, start timestamp long frame
 -- sending process.
 -- type   : sequential
-  p_catch_trg_timestamp : process (clk_i, rst_i) is
-  begin  -- process
-    if rst_i = '1' then                   -- asynchronous reset (active high)
-      s_trg_timestamp <= (others => '0');
-    elsif rising_edge(clk_i) then  -- rising clock edge
-      if s_local_trigger_pulse = '1' then
-        s_trg_timestamp <= local_time_i;
-      end if;
+  -- p_catch_trg_timestamp : process (clk_i, rst_i) is
+  -- begin  -- process
+    -- if rst_i = '1' then                   -- asynchronous reset (active high)
+      -- s_trg_timestamp <= (others => '0');
+    -- elsif rising_edge(clk_i) then  -- rising clock edge
+      -- if s_local_trigger_pulse = '1' then
+        -- s_trg_timestamp <= local_time_i;
+      -- end if;
+    -- end if;
+  -- end process;
+Inst_trigger_fifo :entity work.fifo_generator_0
+  PORT MAP (
+    clk => clk_i,
+    din => local_time_i,
+    wr_en => s_local_trigger_pulse,
+    rd_en => rd_en,
+    dout => dout,
+    full => full,
+    empty => empty,
+    valid => valid
+  );
+-- loss of trigger counter
+process(clk_i)
+begin
+    if rst_i = '1' then
+        loss_counter <= (others => '0');
+    elsif rising_edge(clk_i) then
+        if s_local_trigger_pulse = '1' and full = '1' then
+            loss_counter <= loss_counter + 1;
+        end if;
     end if;
-  end process;
-
+end process;
+loss_counter_o <= std_logic_vector(loss_counter);
 -- purpose: FSM
 -- type   : sequential
   p_update_state : process (clk_i, rst_i) is
@@ -131,16 +161,20 @@ begin  -- architecture  rtl
       case s_state is
 
         when st0_idle =>
-          if s_local_trigger_pulse = '1' then
+          rd_en <= '1';
+          if empty = '0' then
             s_state <= st1_verify_txready;
           end if;
 
         when st1_verify_txready =>
-          if s_ttctx_ready = '1' then
+          if s_ttctx_ready = '1' and valid = '1' then
             s_state <= st2_chb_req;
+            s_trg_timestamp <= dout;
+            rd_en <= '1';
           end if;
 
         when st2_chb_req =>
+          rd_en <= '0';
           if chb_grant_i = '1' then
             s_state <= st3_time_byte_0;
           end if;
@@ -309,8 +343,35 @@ begin  -- architecture  rtl
   end process;
 
   ttc_long_o.long_address <= (others => '0');
-
-
+---- trigger rate counter ----
+process(clk_i,pps_i) -- find rising_edge
+begin
+    if rising_edge(clk_i) then
+        pps_r <= pps_i;
+        if pps_i = '1' and pps_r = '0' then
+            pps_r2 <= '1';
+        else
+            pps_r2 <= '0';
+        end if;
+    end if;
+end process;
+process(clk_i,pps_r2)
+begin
+    if rising_edge(clk_i) then
+        if pps_r2 = '1' then
+            if rd_en = '1' then
+                trig_rate <= (0 => '1', others => '0');
+            else 
+                trig_rate <= (others => '0');
+            end if;
+            trig_rate_o <= std_logic_vector(trig_rate);
+        else
+            if rd_en = '1' then
+                trig_rate <= trig_rate + 1;
+            end if;
+        end if;
+    end if;
+end process;
 
 
 end architecture  rtl;

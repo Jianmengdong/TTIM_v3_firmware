@@ -35,6 +35,8 @@ entity trigger_gen is
     clk_i : in STD_LOGIC;
     reset_i : in std_logic;
     reset_event_cnt_i : in std_logic;
+    pps_i : in std_logic;
+    trig_rate_o : out std_logic_vector(23 downto 0);
     --=========================================--
     en_trig_i : in STD_LOGIC_vector(4 downto 0);
     -- => en_trig_i(4): enable trigger from CTU
@@ -49,6 +51,7 @@ entity trigger_gen is
     -- => ext_trig_i(0): VETO trigger
     --=========================================--
     trig_i : in std_logic_vector(15 downto 0);
+    trig_window_i : in std_logic_vector(3 downto 0);
     l1a_o : out std_logic;
     global_time_i : in std_logic_vector(67 downto 0);
     period_i : in std_logic_vector(31 downto 0); --x03B9 ACA0 => 1Hz  x0000F424 => 1KHz
@@ -65,6 +68,7 @@ architecture Behavioral of trigger_gen is
 
     signal trig_per,trig_per_i,trig_phy,trig_phy_i,accept,load_i,trig_ctu : std_logic;
     signal nhit,nhit_th : unsigned(7 downto 0);
+    signal nhit_w : t_uarray8(9 downto 0) := (others => (others => '0'));
     signal hit_cnt : unsigned(7 downto 0) := x"00";
     signal trig_th : std_logic_vector(7 downto 0);
     signal hit_ch,hit_i_r,hit_i_r2,hit_ch_i : t_uarray8(47 downto 0);
@@ -78,10 +82,14 @@ architecture Behavioral of trigger_gen is
     signal r_en_trig_i,dead_time : std_logic;
     signal dead_cnt : unsigned(3 downto 0);
     signal st : unsigned(1 downto 0);
+    signal w : integer range 0 to 9 := 0;
+    signal trig_rate : unsigned(23 downto 0);
+    signal pps_r,pps_r2 : std_logic;
 
 begin
 l1a_o <= accept when dead_time = '0' else '0';
 rst_event <= trig_cnt(8);
+w <= to_integer(unsigned(trig_window_i));
 process(clk_i)
 begin
     if rising_edge(clk_i) then
@@ -181,7 +189,8 @@ begin
         hit_0(4) <= hit_ch(32) + hit_ch(33) + hit_ch(34) + hit_ch(35) + hit_ch(36) + hit_ch(37) + hit_ch(38) + hit_ch(39);
         hit_0(5) <= hit_ch(40) + hit_ch(41) + hit_ch(42) + hit_ch(43) + hit_ch(44) + hit_ch(45) + hit_ch(46) + hit_ch(47);
         nhit <= hit_0(0) + hit_0(1) + hit_0(2) + hit_0(3) + hit_0(4) + hit_0(5);
-        if nhit < nhit_th then
+        nhit_w(0) <= nhit;
+        if nhit_w(w) < nhit_th then
             trig_phy_i <= '0';
         else
             trig_phy_i <= '1';
@@ -189,13 +198,22 @@ begin
         end if;
     end if;
 end process;
+G_trig_window: for i in 9 downto 1 generate
+begin
+    process(clk_i)
+    begin
+    if rising_edge(clk_i) then
+        nhit_w(i) <= nhit_w(i - 1) + nhit;
+    end if;
+    end process;
+end generate;
 process(clk_i)
 begin
     if rising_edge(clk_i) then
         hit_cnt <= hit_cnt + 1;
     end if;
 end process;
-nhit_o <= std_logic_vector(nhit) when fake_hit = '0' else std_logic_vector(hit_cnt);
+nhit_o <= std_logic_vector(nhit_w(w)) when fake_hit = '0' else std_logic_vector(hit_cnt);
 ---- trig_per generate. Accept signal is generated periodicly. The period is set by period_i.
 
 p_trig_per:process(clk_i)
@@ -232,5 +250,33 @@ end process;
     -- end if;
 -- end process;
 -- trig_info_o <= trig_info_i;
-
+---- trigger rate counter ----
+process(clk_i,pps_i) -- find rising_edge
+begin
+    if rising_edge(clk_i) then
+        pps_r <= pps_i;
+        if pps_i = '1' and pps_r = '0' then
+            pps_r2 <= '1';
+        else
+            pps_r2 <= '0';
+        end if;
+    end if;
+end process;
+process(clk_i,pps_r2)
+begin
+    if rising_edge(clk_i) then
+        if pps_r2 = '1' then
+            if accept = '1' then
+                trig_rate <= (0 => '1', others => '0');
+            else 
+                trig_rate <= (others => '0');
+            end if;
+            trig_rate_o <= std_logic_vector(trig_rate);
+        else
+            if accept = '1' then
+                trig_rate <= trig_rate + 1;
+            end if;
+        end if;
+    end if;
+end process;
 end Behavioral;

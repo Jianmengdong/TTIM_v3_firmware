@@ -166,7 +166,9 @@ port
 
     --____________________________COMMON PORTS________________________________
      GT0_QPLLOUTCLK_IN  : in std_logic;
-     GT0_QPLLOUTREFCLK_IN : in std_logic
+     GT0_QPLLOUTREFCLK_IN : in std_logic;
+    loop_test : in std_logic;
+    prbs_err : out std_logic
 
 );
 end gtwizard_0;
@@ -291,7 +293,9 @@ port
 
     --____________________________COMMON PORTS________________________________
      GT0_QPLLOUTCLK_IN  : in std_logic;
-     GT0_QPLLOUTREFCLK_IN : in std_logic
+     GT0_QPLLOUTREFCLK_IN : in std_logic;
+    loop_test : in std_logic;
+    prbs_err : out std_logic
 
 );
 end component;
@@ -405,7 +409,9 @@ port map
 
     --____________________________COMMON PORTS________________________________
      GT0_QPLLOUTCLK_IN  => GT0_QPLLOUTCLK_IN,
-     GT0_QPLLOUTREFCLK_IN => GT0_QPLLOUTREFCLK_IN 
+     GT0_QPLLOUTREFCLK_IN => GT0_QPLLOUTREFCLK_IN,
+     loop_test => loop_test,
+     prbs_err => prbs_err
 
 );
  

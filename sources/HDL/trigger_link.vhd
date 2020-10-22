@@ -9,6 +9,10 @@ entity trigger_link is
     Port ( 
     clk_i : in STD_LOGIC;
     reset_i : in std_logic;
+    loop_test : in std_logic;
+    reset_err : in std_logic;
+    prbs_error : out std_logic_vector(31 downto 0);
+    
     SFP_RX_P : in std_logic;
     SFP_RX_N : in std_logic;
     SFP_TX_P : out std_logic;
@@ -27,7 +31,10 @@ architecture Behavioral of trigger_link is
     signal tx_data_i,rx_data_i : std_logic_vector(15 downto 0);
     signal gtrefclk,clk_sys,gt0_rxoutclk_out,gt0_rxusrclk_in : std_logic;
     signal tx_charisk,rxcharisk_i : std_logic_vector(1 downto 0);
-    signal rx_resetdone,rx_slide_i : std_logic;
+    signal tx_resetdone,rx_resetdone,resetdone,rx_slide_i : std_logic;
+    --signal error_cnt : std_logic_vector(31 downto 0);
+    signal error_cnt : unsigned(31 downto 0);
+    signal prbs_err : std_logic;
 
 begin
 -- ibufds_instq0_clk0 : IBUFDS_GTE2  
@@ -56,7 +63,7 @@ Inst_trig_link :entity work.gtwizard_0
     SOFT_RESET_TX_IN                =>      reset_i,
     SOFT_RESET_RX_IN                =>      reset_i,
     DONT_RESET_ON_DATA_ERROR_IN     =>      '1',
-    GT0_TX_FSM_RESET_DONE_OUT => open,
+    GT0_TX_FSM_RESET_DONE_OUT => tx_resetdone,
     GT0_RX_FSM_RESET_DONE_OUT => rx_resetdone,
     GT0_DATA_VALID_IN => '1',
 
@@ -123,19 +130,22 @@ Inst_trig_link :entity work.gtwizard_0
 
     --____________________________COMMON PORTS________________________________
      GT0_QPLLOUTCLK_IN  => '0',
-     GT0_QPLLOUTREFCLK_IN => '0' 
+     GT0_QPLLOUTREFCLK_IN => '0',
+     loop_test => loop_test,
+     prbs_err => prbs_err
 );
 process(clk_i)
 begin
     if rising_edge(clk_i) then
         trig_o <= rx_data_i;
+        resetdone <= tx_resetdone and rx_resetdone;
     end if;
 end process;
 tx_data_i <= nhit_i & x"BC";
 charisk_gen:process(clk_i, reset_i)
 variable i: integer:=0;
 begin
-	if reset_i = '1' then
+	if reset_i = '1' or loop_test = '1' then
 		tx_charisk <= "00";
 		i:=1;
 	elsif rising_edge(clk_i) then
@@ -155,11 +165,24 @@ Inst_manual_align:entity work.rx_alignment
     )
     port map(
     clk_i => gt0_rxusrclk_in,
-    reset_i => not rx_resetdone,
+    reset_i => (not resetdone) or loop_test,
     slide_o => rx_slide_i,
     rx_data_i => rx_data_i,
     aligned_o => rx_aligned,
     re_align_i => '0',
     debug_fsm => open
     );
+process(clk_i,loop_test)
+begin
+    if loop_test = '0' or resetdone = '0' then
+        error_cnt <= (others => '0');
+    elsif rising_edge(clk_i) then
+        if reset_err = '1' then
+            error_cnt <= (others => '0');
+        elsif prbs_err = '1' then
+            error_cnt <= error_cnt + 1;
+        end if;
+    end if;
+end process;
+prbs_error <= std_logic_vector(error_cnt);
 end Behavioral;

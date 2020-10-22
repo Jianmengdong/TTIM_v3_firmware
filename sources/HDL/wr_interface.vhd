@@ -13,6 +13,7 @@ use work.TTIM_pack.all;
 entity wr_interface is
     Port ( 
     sys_clk_i : in STD_LOGIC;
+    sys_clkg : in std_logic;
     reset_i : in std_logic;
     wr_locked : in std_logic;
     PDATA_RX : in std_logic_vector(9 downto 0);
@@ -55,9 +56,10 @@ architecture Behavioral of wr_interface is
     signal timer_8ns_u : unsigned(47 downto 0);
     signal timer_utc_u : unsigned(47 downto 0);
     signal timer_total : unsigned(95 downto 0);
-    signal pack_probe : std_logic;
+    signal pack_probe,tie_to_vcc : std_logic;
     
 begin
+tie_to_vcc <= '1';
 Ibuf:IBUFDS
 port map(
 I => PPS_IN_P,

@@ -22,6 +22,7 @@
 
 module clk_wiz_0(
     input clk_in1,
+    input rst,
     output        clk_out1,
     output        clk_out2,
     output        clk_out3,
@@ -120,7 +121,7 @@ module clk_wiz_0(
     .CLKINSTOPPED        (clkinstopped_unused),
     .CLKFBSTOPPED        (clkfbstopped_unused),
     .PWRDWN              (1'b0),
-    .RST                 (1'b0));
+    .RST                 (rst));
     
     assign locked = locked_int;
     BUFG clkout1_buf

@@ -30,6 +30,7 @@ entity prbs_check is
     Port ( 
     clk_i : in STD_LOGIC;
     reset_i : in std_logic;
+    loop_test : in std_logic;
     en_i : in std_logic_vector(47 downto 0);
     global_time_i   : in std_logic_vector(47 downto 0);
     prbs_i1 : in std_logic_vector(47 downto 0);
@@ -46,7 +47,7 @@ end prbs_check;
 architecture Behavioral of prbs_check is
 
 signal prbs_err1,prbs_err2 : std_logic_vector(47 downto 0);
-signal prbs_i1_r,prbs_i1_r2,prbs_i2_r,prbs_i2_r2 : std_logic_vector(47 downto 0);
+signal prbs_i1_r,prbs_i1_r2,prbs_i1_r3,prbs_i2_r,prbs_i2_r2,prbs_i2_r3 : std_logic_vector(47 downto 0);
 signal err_cnt_1,err_cnt_2 : t_uarray32(47 downto 0);
 
 begin
@@ -75,6 +76,8 @@ g_pbrs_chk: for i in 47 downto 0 generate
         EN => en_i(i),
         DATA_OUT(0) => prbs_err1(i)
         );
+        --prbs_i1_r3(i) <= prbs_i1_r2(i) when loop_test = '0' else not prbs_i1_r2(i);
+        prbs_i2_r3(i) <= prbs_i2_r2(i) when loop_test = '0' else not prbs_i2_r2(i);
     p_err_cnt1:process(clk_i)
     begin
         if reset_i = '1' or en_i(i) = '0' then
@@ -104,7 +107,7 @@ g_pbrs_chk: for i in 47 downto 0 generate
         port map(
         RST => '0',
         CLK => clk_i,
-        DATA_IN(0) => prbs_i2_r2(i),
+        DATA_IN(0) => prbs_i2_r3(i),
         EN => en_i(i),
         DATA_OUT(0) => prbs_err2(i)
         );

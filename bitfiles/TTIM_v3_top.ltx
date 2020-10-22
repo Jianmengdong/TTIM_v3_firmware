@@ -1692,7 +1692,7 @@
         <net name="v_sma_sel"/>
       </nets>
     </probe>
-    <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
+    <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
         <Option Id="CORE_LOCATION" value="1:1"/>
@@ -1700,13 +1700,16 @@
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
         <Option Id="OUTPUT_VALUE" value=""/>
-        <Option Id="OUTPUT_VALUE_RADIX" value="BINARY"/>
+        <Option Id="OUTPUT_VALUE_RADIX" value="HEX"/>
         <Option Id="PROBE_PORT" value="25"/>
         <Option Id="PROBE_PORT_BITS" value="0"/>
-        <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="4"/>
       </probeOptions>
       <nets>
-        <net name="wr_reset_OBUF"/>
+        <net name="v_trig_window[3]"/>
+        <net name="v_trig_window[2]"/>
+        <net name="v_trig_window[1]"/>
+        <net name="v_trig_window[0]"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
@@ -1721,8 +1724,8 @@
         <Option Id="PROBE_PORT_BIT_COUNT" value="2"/>
       </probeOptions>
       <nets>
-        <net name="Inst_wr_interface/wr_rx_ctrl[1]"/>
-        <net name="Inst_wr_interface/wr_rx_ctrl[0]"/>
+        <net name="Inst_wr_interface/wr_rx_ctrl_i[1]"/>
+        <net name="Inst_wr_interface/wr_rx_ctrl_i[0]"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
@@ -1737,14 +1740,14 @@
         <Option Id="PROBE_PORT_BIT_COUNT" value="8"/>
       </probeOptions>
       <nets>
-        <net name="Inst_wr_interface/wr_rx_data[7]"/>
-        <net name="Inst_wr_interface/wr_rx_data[6]"/>
-        <net name="Inst_wr_interface/wr_rx_data[5]"/>
-        <net name="Inst_wr_interface/wr_rx_data[4]"/>
-        <net name="Inst_wr_interface/wr_rx_data[3]"/>
-        <net name="Inst_wr_interface/wr_rx_data[2]"/>
-        <net name="Inst_wr_interface/wr_rx_data[1]"/>
-        <net name="Inst_wr_interface/wr_rx_data[0]"/>
+        <net name="Inst_wr_interface/wr_rx_data_i[7]"/>
+        <net name="Inst_wr_interface/wr_rx_data_i[6]"/>
+        <net name="Inst_wr_interface/wr_rx_data_i[5]"/>
+        <net name="Inst_wr_interface/wr_rx_data_i[4]"/>
+        <net name="Inst_wr_interface/wr_rx_data_i[3]"/>
+        <net name="Inst_wr_interface/wr_rx_data_i[2]"/>
+        <net name="Inst_wr_interface/wr_rx_data_i[1]"/>
+        <net name="Inst_wr_interface/wr_rx_data_i[0]"/>
       </nets>
     </probe>
     <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
@@ -2083,6 +2086,21 @@
         <net name="Inst_wr_interface/debug_fsm[2]"/>
         <net name="Inst_wr_interface/debug_fsm[1]"/>
         <net name="Inst_wr_interface/debug_fsm[0]"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
+        <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
+        <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
+        <Option Id="PROBE_PORT" value="8"/>
+        <Option Id="PROBE_PORT_BITS" value="0"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
+      </probeOptions>
+      <nets>
+        <net name="Inst_wr_interface/pack_probe"/>
       </nets>
     </probe>
   </probeset>
