@@ -2,6 +2,8 @@
 -- 05/12/2019 -- version2: change first latched bytes 
 --                data comparison with x"AB" to be compatible
 --                with new mini-WR firmware
+-- 24/11/2020 -- change receiving data buffer to 512 bytes; add uart interface
+--               with mini-WR
 --========================================================
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -10,7 +12,7 @@ library UNISIM;
 use UNISIM.VComponents.all;
 use work.lite_bus_pack.all;
 use work.TTIM_pack.all;
-entity wr_interface is
+entity wr_interface2 is
     Port ( 
     sys_clk_i : in STD_LOGIC;
     sys_clkg : in std_logic;
@@ -37,20 +39,31 @@ entity wr_interface is
     timestamp_48b_o : out std_logic_vector(47 downto 0)
     --debug_fsm : out std_logic_vector(3 downto 0)
     );
-end wr_interface;
+end wr_interface2;
 
-architecture Behavioral of wr_interface is
-
+ architecture Behavioral of wr_interface2 is
+    constant st0_idle : std_logic_vector(3 downto 0) := x"0";
+    constant st0_get_port : std_logic_vector(3 downto 0) := x"1";
+    constant st1_get_data : std_logic_vector(3 downto 0) := x"2";
+    constant st2_assmble_data : std_logic_vector(3 downto 0) := x"3";
+    constant st3_wait_respond : std_logic_vector(3 downto 0) := x"4";
+    constant st3_uart_fifo : std_logic_vector(3 downto 0) := x"5";
+    constant st4_respond : std_logic_vector(3 downto 0) := x"6";
+    constant st5_CRC_error : std_logic_vector(3 downto 0) := x"7";
+    constant st5_addr_error : std_logic_vector(3 downto 0) := x"8";
+    constant st5_timeout_error : std_logic_vector(3 downto 0) := x"9";
+    constant st5_overflow_error : std_logic_vector(3 downto 0) := x"a";
     signal sel :integer;
     signal wr_rx_ctrl,wr_rx_ctrl_i : std_logic_vector(1 downto 0);
     signal wr_rx_data,wr_tx_data,wr_rx_data_i : std_logic_vector(7 downto 0);
     signal wr_tx_cts,wr_tx_vld : std_logic;
-    signal data_send,data_tx : std_logic_vector(79 downto 0);
-    signal data_buf : std_logic_vector(159 downto 0) := (others => '0');
-    type t_state is (st0_idle,st1_get_data,st2_assmble_data,
-                    st3_wait_respond,st4_respond,st5_CRC_error,st5_addr_error,
-                    st5_timeout_error);
-    signal state : t_state;
+    signal data_send : std_logic_vector(159 downto 0);
+    signal data_tx : std_logic_vector(79 downto 0);
+    signal data_buf : t_array8(511 downto 0) := (others => (others => '0'));
+    -- type t_state is (st0_idle,st0_get_port,st1_get_data,st2_assmble_data,
+                    -- st3_wait_respond,st3_uart_fifo,st4_respond,st5_CRC_error,st5_addr_error,
+                    -- st5_timeout_error,st5_overflow_error);
+    signal state : std_logic_vector(3 downto 0);
     signal ack,data_valid,pps_i,timer_valid : std_logic;
     signal debug_fsm : std_logic_vector(3 downto 0);
     signal timer_utc : std_logic_vector(39 downto 0);
@@ -59,9 +72,13 @@ architecture Behavioral of wr_interface is
     signal timer_utc_u : unsigned(47 downto 0);
     signal timer_total : unsigned(95 downto 0);
     signal pack_probe,tie_to_vcc : std_logic;
-    signal uart_received,uart_sent,uart_tx_t,start_tx : std_logic;
+    signal uart_received,uart_sent,uart_sent_r,uart_tx_t,start_tx : std_logic;
     signal byte_rx,byte_tx : std_logic_vector(7 downto 0);
     signal baud_div : std_logic_vector(31 downto 0);
+    signal uart_fifo_rd_data,uart_fifo_wr_data,uart_fifo_wr_data_r : std_logic_vector(7 downto 0);
+    signal uart_fifo_rd_en,uart_fifo_wr_en,uart_fifo_wr_en_r,uart_fifo_valid : std_logic;
+    signal st_uart : std_logic_vector(3 downto 0);
+    signal len_std : std_logic_vector(9 downto 0);
     
 begin
 tie_to_vcc <= '1';
@@ -107,63 +124,75 @@ begin
     end if;
 end process;
 process(sys_clk_i)
-variable cnt : integer range 0 to 10;
-variable len : integer range 0 to 20;
+variable cnt : integer range 0 to 31;
+variable s : integer range 0 to 512;
+variable len : integer range 0 to 512;
 variable time_out_cnt : integer range 0 to 65535;
 begin
     if reset_i = '1' then
         state <= st0_idle;
-        data_buf <= (others => '0');
+        data_buf <= (others => (others => '0'));
     elsif rising_edge(sys_clk_i) then
         case state is
             when st0_idle =>
-                data_buf <= (others => '0');
+                data_buf <= (others => (others => '0'));
                 data_valid <= '0';
                 wr_tx_vld <= '0';
                 update_data_valid <= '0';
                 data_send <= (others => '0');
+                uart_fifo_wr_en_r <= '0';
                 cnt := 0;
                 len := 0;
                 re_load <= '0';
                 time_out_cnt := 0;
                 if wr_rx_ctrl_i = "01" then
                     if wr_rx_data_i = x"AB" then
-                        state <= st1_get_data;
-                        len := 1;
-                        data_buf(7 downto 0) <= wr_rx_data_i;
+                        state <= st0_get_port;
+                        --len := 1;
+                        --data_buf(7 downto 0) <= wr_rx_data_i;
                     else
                         state <= st2_assmble_data;
                     end if;
                 end if;
                 debug_fsm <= x"0";
                 pack_probe <= '0';
+            when st0_get_port =>
+                state <= st1_get_data;  -- x"C0"
             when st1_get_data =>
-                data_buf <= data_buf(151 downto 0) & wr_rx_data_i;
+                data_buf(len) <= wr_rx_data_i;
                 len := len + 1;
                 if wr_rx_ctrl_i = "10" then
                     state <= st2_assmble_data;
+                elsif len = 512 then
+                    state <= st5_overflow_error;
                 elsif wr_rx_ctrl_i = "11" then
                     state <= st5_CRC_error;
                 end if;
                 debug_fsm <= x"1";
             when st2_assmble_data =>
                 cnt := 4;
-                if len = 8 and data_buf(UPDATE_DATA_WIDTH+15 downto UPDATE_DATA_WIDTH) = x"55FF" then --update bitstream
-                    update_data_valid <= '1';
-                    update_data <= data_buf(UPDATE_DATA_WIDTH - 1 downto 0);
-                    data_send(79 downto 48) <= data_buf(UPDATE_DATA_WIDTH+31 downto UPDATE_DATA_WIDTH+16) & x"0001";
+                if data_buf(0) = x"55" then -- update packets
                     state <= st4_respond;
-                elsif len = 10 and data_buf(63 downto 60) = x"4" then  -- litebus packet
+                    if data_buf(1) = x"55" then
+                        data_send(159 downto 128) <= x"ABC0" & update_fifo_empty & update_status & update_error;
+                    elsif data_buf(1) = x"FF" then
+                        update_data_valid <= '1';
+                        for i in 0 to UPDATE_DATA_WIDTH/8-1 loop
+                            update_data(i*8+7 downto i*8) <= data_buf(len-1-i);
+                        end loop;
+                        data_send(159 downto 128) <= x"ABC00000";
+                        cnt := 20;
+                    else
+                        update_control <= data_buf(1)(3 downto 0)&data_buf(2)&data_buf(3);
+                        re_load <= data_buf(1)(4);
+                        data_send(159 downto 128) <= x"ABC00000";
+                    end if;
+                elsif data_buf(0)(7 downto 4) = x"4" then -- LiteBus packets
                     data_valid <= '1';
                     state <= st3_wait_respond;
-                elsif len = 6 and data_buf(31 downto 16) = x"5555" then --update check status
-                    data_send(79 downto 48) <= data_buf(47 downto 32) & update_fifo_empty & update_status & update_error;
-                    state <= st4_respond;
-                elsif len = 6 and data_buf(31 downto 24) = x"55" then --update control
-                    update_control <= data_buf(19 downto 0);
-                    re_load <= data_buf(20);
-                    data_send(79 downto 48) <= data_buf(47 downto 32) & x"0001";
-                    state <= st4_respond;
+                elsif data_buf(0) = x"66" then -- uart packets
+                    state <= st3_uart_fifo;
+                    s := 1;
                 else --other packet
                     state <= st0_idle;
                     pack_probe <= '1';
@@ -175,7 +204,7 @@ begin
                     if sel = 99 then
                         state <= st5_addr_error;
                     elsif ack = '1' then
-                        data_send <= data_tx;
+                        data_send(159 downto 80) <= data_tx;
                         state <= st4_respond;
                         time_out_cnt := 0;
                     end if;
@@ -185,13 +214,24 @@ begin
                 end if;
                 cnt := 10;
                 debug_fsm <= x"3";
+            when st3_uart_fifo =>
+                if s < len then
+                    uart_fifo_wr_en_r <= '1';
+                    uart_fifo_wr_data_r <= data_buf(s);
+                    s := s + 1;
+                else
+                    uart_fifo_wr_en_r <= '0';
+                    state <= st4_respond;
+                    data_send(159 downto 128) <= x"ABC00000";
+                end if;
+                debug_fsm <= x"6";
             when st4_respond =>
                 update_data_valid <= '0';
                 if wr_tx_cts = '1' then
                     if cnt > 0 then
                         wr_tx_vld <= '1';
-                        wr_tx_data <= data_send(79 downto 72);
-                        data_send <= data_send(71 downto 0) & x"00";
+                        wr_tx_data <= data_send(159 downto 152);
+                        data_send <= data_send(151 downto 0) & x"00";
                         cnt := cnt - 1;
                     else
                         cnt := 0;
@@ -208,23 +248,34 @@ begin
                 end if;
                 debug_fsm <= x"4";
             when st5_CRC_error =>
-                cnt := 10;
+                cnt := 4;
                 pack_probe <= '1';
-                data_send <= x"ABC0FFFFFFFFFFFFFFFF";
+                data_send(159 downto 128) <= x"ABC00001";
                 state <= st4_respond;
                 debug_fsm <= x"5";
             when st5_addr_error =>
-                cnt := 10;
-                data_send <= data_buf(79 downto 56) & x"FFFFFFFFFFFFFF";
+                cnt := 4;
+                pack_probe <= '1';
+                data_send(159 downto 128) <= x"ABC00002";
                 state <= st4_respond;
+                debug_fsm <= x"7";
             when st5_timeout_error =>
-                cnt := 10;
-                data_send <= x"ABC00000000000000000";
+                cnt := 4;
+                pack_probe <= '1';
+                data_send(159 downto 128) <= x"ABC00003";
                 state <= st4_respond;
+                debug_fsm <= x"8";
+            when st5_overflow_error =>
+                cnt := 4;
+                pack_probe <= '1';
+                data_send(159 downto 128) <= x"ABC00004";
+                state <= st4_respond;
+                debug_fsm <= x"9";
             when others =>
                 state <= st0_idle;
         end case;
     end if;
+len_std <= std_logic_vector(to_unsigned(len, 10));
 end process;
 process(sys_clk_i)
 begin
@@ -232,25 +283,43 @@ begin
         ack <= lite_bus_r(sel).ack;
     end if;
 end process;
-data_tx <= data_buf(79 downto 64) & lite_bus_r(sel).head & lite_bus_r(sel).data;
+data_tx <= x"ABC0" & lite_bus_r(sel).head & lite_bus_r(sel).data;
 
 process(data_buf)
 begin
-    sel <= f_lite_bus_addr_sel(data_buf(55 downto 48));
+    sel <= f_lite_bus_addr_sel(data_buf(1));
 end process;
 Gen_slaves:for i in NSLV - 1 downto 0 generate
 begin
     lite_bus_w(i).strobe <= '1' when sel = i and data_valid = '1' else '0';
-    lite_bus_w(i).wr_rd <= data_buf(56); --1 for write, 0 for read
-    lite_bus_w(i).data <= data_buf(47 downto 0);
-    lite_bus_w(i).head <= data_buf(63 downto 57);
-    lite_bus_w(i).addr <= data_buf(55 downto 48);
+    lite_bus_w(i).wr_rd <= data_buf(0)(0); --1 for write, 0 for read
+    lite_bus_w(i).data <= data_buf(2)&data_buf(3)&data_buf(4)&data_buf(5)&data_buf(6)&data_buf(7);
+    lite_bus_w(i).head <= data_buf(0)(7 downto 1);
+    lite_bus_w(i).addr <= data_buf(1);
 end generate;
+-- process(sys_clk_i)
+-- begin
+    -- if rising_edge(sys_clk_i) then
+        -- uart_fifo_wr_data <= uart_fifo_wr_data_r;
+        -- uart_fifo_wr_en <= uart_fifo_wr_en_r;
+    -- end if;
+-- end process;
+Inst_uart_fifo:entity work.uart_fifo
+    port map(
+    wr_clk => sys_clk_i,
+    rst => '0',
+    rd_clk => sys_clk_i,
+    din => uart_fifo_wr_data_r,
+    wr_en => uart_fifo_wr_en_r,
+    rd_en => uart_fifo_rd_en,
+    dout => uart_fifo_rd_data,
+    valid => uart_fifo_valid
+    );
 Inst_uart:entity work.uart_communication_blocks
     port map(
     rst => reset_i,
     clk => sys_clk_i,
-    cycle_wait_baud => baud_div,
+    cycle_wait_baud => x"0000043D",
     byte_tx => byte_tx,
     byte_rx => byte_rx,
     data_sent_tx => uart_sent,
@@ -266,6 +335,58 @@ Inst_uart:entity work.uart_communication_blocks
     I => '0',
     T => uart_tx_t
     );
+P_uart:process(sys_clk_i)
+variable wait_cnt : integer range 0 to 4095;
+variable rx_cnt : integer range 0 to 7;
+begin
+    if reset_i = '1' then
+        st_uart <= x"0";
+        start_tx <= '0';
+        uart_fifo_rd_en <= '0';
+    elsif rising_edge(sys_clk_i) then
+        uart_sent_r <= uart_sent;
+        case st_uart is
+            when x"0" =>
+                uart_fifo_rd_en <= '0';
+                start_tx <= '0';
+                rx_cnt := 0;
+                if uart_fifo_valid = '1' then
+                    byte_tx <= uart_fifo_rd_data;
+                    st_uart <= x"1";
+                end if;
+            when x"1" =>
+                start_tx <= '1';
+                uart_fifo_rd_en <= '1';
+                st_uart <= x"2";
+            when x"2" =>
+                uart_fifo_rd_en <= '0';
+                if uart_sent = '1' and uart_sent_r = '0' then
+                    if byte_tx = x"0D" then  -- "\r", end of command
+                        st_uart <= x"3";
+                    else
+                        st_uart <= x"4";
+                        rx_cnt := 0;
+                    end if;
+                end if;
+                wait_cnt := 0;
+            when x"3" => 
+                wait_cnt := wait_cnt + 1;
+                start_tx <= '0';
+                if wait_cnt = 4095 then
+                    st_uart <= x"0";
+                end if;
+            when x"4" =>
+                if uart_received = '1' then
+                    rx_cnt := rx_cnt + 1;
+                    if byte_rx = byte_tx or rx_cnt > 3 then
+                        st_uart <= x"3";
+                    end if;
+                end if;
+            when others =>
+                st_uart <= x"0";
+        end case;
+    end if;
+end process;
 i_ila:entity work.ila_1
     port map(
     clk => sys_clk_i,
@@ -274,19 +395,12 @@ i_ila:entity work.ila_1
     probe2(0) => wr_tx_cts,
     probe3 => wr_tx_data,
     probe4(0) => wr_tx_vld,
-    probe5 => data_buf,
-    probe6 => data_send,
-    probe7 => debug_fsm,
+    probe5 => data_buf(1),
+    probe6 => data_buf(2),
+    probe7 => data_buf(3),
     probe8(0) => pack_probe,
-    probe9(0) => uart_sent,
-    probe10(0) => uart_received,
-    probe11 => byte_rx
-    );
-Inst_vio:entity work.vio_1
-    port map(
-    clk => sys_clk_i,
-    probe_out0(0) => start_tx,
-    probe_out1 => byte_tx,
-    probe_out2 => baud_div -- 0x43D, 125M/1085 = 115200
+    probe9 => data_buf(4),
+    probe10 => len_std,
+    probe11 => state
     );
 end Behavioral;

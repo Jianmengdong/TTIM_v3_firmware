@@ -59,7 +59,9 @@ entity trigger_gen is
     hit_i : in t_array2(47 downto 0);
     nhit_o : out std_logic_vector(7 downto 0);
     rst_event : out std_logic;
-    fake_hit : in std_logic
+    fake_hit : in std_logic;
+    fake_hit_max : out std_logic;
+    led : out std_logic
     --trig_info_o : out std_logic_vector(127 downto 0)
     );
 end trigger_gen;
@@ -210,7 +212,17 @@ end generate;
 process(clk_i)
 begin
     if rising_edge(clk_i) then
-        hit_cnt <= hit_cnt + 1;
+        if fake_hit = '1' then
+            hit_cnt <= hit_cnt + 1;
+            if hit_cnt = x"FF" then
+                fake_hit_max <= '1';
+            else
+                fake_hit_max <= '0';
+            end if;
+        else
+            hit_cnt <= (others => '0');
+            fake_hit_max <= '0';
+        end if;
     end if;
 end process;
 nhit_o <= std_logic_vector(nhit_w(w)) when fake_hit = '0' else std_logic_vector(hit_cnt);
@@ -275,6 +287,26 @@ begin
         else
             if accept = '1' then
                 trig_rate <= trig_rate + 1;
+            end if;
+        end if;
+    end if;
+end process;
+process(clk_i)
+variable delay : integer range 0 to 65535 := 0;
+variable tg : std_logic := '0';
+begin
+    if rising_edge(clk_i) then
+        if tg = '0' then
+            led <= '0';
+            delay := 0;
+            if accept = '1' then
+                led <= '1';
+                tg := '1';
+            end if;
+        else
+            delay := delay + 1;
+            if delay = 65534 then
+                tg := '0';
             end if;
         end if;
     end if;

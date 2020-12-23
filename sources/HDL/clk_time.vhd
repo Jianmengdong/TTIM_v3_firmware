@@ -25,7 +25,8 @@ entity clk_time is
     sys_clk_lock_o : out std_logic;
     led_o : out std_logic_vector(1 downto 0);
     retry_cnt : out std_logic_vector(3 downto 0);
-    start_wr_done : out std_logic
+    start_wr_done : out std_logic;
+    reset_wr_clk_o : out std_logic
     );
 end clk_time;
 
@@ -180,18 +181,19 @@ begin
         end case;
     end if;
 end process;
-Inst_ila : entity work.ila_2
-port map(
-clk => local_clk_125M,
-probe0(0) => sample_done_r1,
-probe1(0) => sample_clk_r,
-probe2(0) => sys_clk_lock,
-probe3 => state,
-probe4(0) => pps_r
-);
+-- Inst_ila : entity work.ila_2
+-- port map(
+-- clk => local_clk_125M,
+-- probe0(0) => sample_done_r1,
+-- probe1(0) => sample_clk_r,
+-- probe2(0) => sys_clk_lock,
+-- probe3 => state,
+-- probe4(0) => pps_r
+-- );
 retry_cnt <= std_logic_vector(retry_cnt_u);
     local_clk_62M5_o <= local_clk_62M5;
     sys_clk_125M_o <= sys_clk_125M;
     sys_clk_lock_o <= sys_clk_lock;
     sys_clk_62M5_o <= sys_clk_62M5;
+    reset_wr_clk_o <= reset_wr_clk;
 end Behavioral;

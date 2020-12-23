@@ -53,8 +53,8 @@ entity TTIM_v3_top is
     PDATA_TX : inout std_logic_vector(9 downto 0);
     PPS_IN_P : in std_logic; --PPS from mini-WR
     PPS_IN_N : in std_logic;
-    wr_uart_tx : out std_logic; --uart port
-    wr_uart_rx : out std_logic;
+    wr_uart_tx : inout std_logic; --uart port
+    wr_uart_rx : in std_logic;
     wr_locked : in std_logic;
     wr_reset : out std_logic;
     -- SPI interface
@@ -88,7 +88,7 @@ end TTIM_v3_top;
 architecture Behavioral of TTIM_v3_top is
 
     constant hw_version : std_logic_vector(15 downto 0) := x"0300"; --major[7:4] minor[3:0]
-    constant fw_version : std_logic_vector(15 downto 0) := x"0200"; --major[7:4] minor[3:0]
+    constant fw_version : std_logic_vector(15 downto 0) := x"02FF"; --major[7:4] minor[3:0]
                                                                     --x"FFFF" for golden image
     
     signal pps_i : std_logic;
@@ -149,7 +149,7 @@ architecture Behavioral of TTIM_v3_top is
     signal led_i : std_logic_vector(1 downto 0);
     signal startup_status : std_logic_vector(2 downto 0);
     signal retry_cnt : std_logic_vector(3 downto 0);
-    signal reset_trig,trig_loop_test : std_logic;
+    signal reset_trig,trig_loop_test,fake_hit_max,reset_wr_clk_o : std_logic;
 begin
 --===========================================--
 --     clock generation
@@ -173,13 +173,14 @@ Inst_clk_time: entity work.clk_time
     sys_clk_200M_o => sys_clk_200M_i,
     sys_clk_lock_o => sys_clk_lock_i,
     start_wr_done => start_wr_done,
+    reset_wr_clk_o => reset_wr_clk_o,
     retry_cnt => retry_cnt,
     led_o => led_i
     );
-    LED(1) <= led_i(1);
+    LED(1) <= led_i(1) when startup_status(2) = '1' else '0';
 --========================================--
 --  interface with mini-WR
-Inst_wr_interface:entity work.wr_interface
+Inst_wr_interface:entity work.wr_interface2
     port map(
     sys_clk_i => sys_clk_125M_i,
     sys_clkg => sys_clkg,
@@ -197,6 +198,8 @@ Inst_wr_interface:entity work.wr_interface
     update_error => update_error,
     update_status => update_status,
     update_control => update_control,
+    uart_tx => wr_uart_tx,
+    uart_rx => wr_uart_rx,
     re_load => re_load,
     pps_o => pps_i,
     pps_original => open,
@@ -255,7 +258,9 @@ Inst_trig_gen:entity work.trigger_gen
     threshold_i => threshold_i,
     hit_i => hit_i,
     nhit_o => nhit_i,
-    fake_hit => fake_hit
+    fake_hit => fake_hit,
+    fake_hit_max => fake_hit_max,
+    led => LED(2)
     --trig_info_o => open
     );
     ext_trig_i(0) <= SMA(1);
@@ -371,7 +376,7 @@ Inst_startup: entity work.startup
     reset_trig_link => reset_trig_link,
     startup_status => startup_status
     );
-    LED(2) <= startup_status(2);
+    --LED(2) <= startup_status(2);
     -- register map----
     
     test_mode_i <= register_array(0) when use_vio = '0' else v_test_mode;
@@ -510,7 +515,8 @@ Inst_startup: entity work.startup
 --  test signals
 -- SMA(0) <= gcu2bec_1(ch_sel) when sma_sel = '0' else gcu2bec_2(ch_sel);
 -- SMA(1) <= 'Z';
-SMA(0) <= pps_i;
-SMA(1) <= sys_clk_62M5_i;
+--SMA(0) <= trig_i(15);
+SMA(0) <= sys_clkg;
+SMA(1) <= sys_clk_lock_i;
 test_pin <= "ZZZZ";
 end Behavioral;

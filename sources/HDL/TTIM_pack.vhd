@@ -15,7 +15,7 @@ package TTIM_pack is
     type t_uarray32 is array (integer range<>) of unsigned(31 downto 0);
     
     constant    g_number_of_GCU : integer := 48;
-    constant    UPDATE_DATA_WIDTH : integer := 32;
+    constant    UPDATE_DATA_WIDTH : integer := 128;
 ------------------------------types and subtypes----------------------------------
 subtype t_parity_ham_8bit  is std_logic_vector(4 downto 0); 
 subtype t_parity_ham_32bit is std_logic_vector(6 downto 0);
