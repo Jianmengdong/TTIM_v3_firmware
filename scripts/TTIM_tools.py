@@ -1,5 +1,6 @@
-from TTIM_v2 import *
+from LiteBusEntity_v2 import *
 from time import sleep
+import socket
 import platform
 import os
 
@@ -50,8 +51,126 @@ def calibrate_l1a(ttim):
     print("done!\n")
 
 
+def calibrate_rx(ttim, channel, pair, show=False):
+    ttim.set("channel_sel", channel)
+    ttim.set("load_tap", 0)
+    j = 0
+    points = []
+    tap = []
+    error = []
+    error_cnt = "error_cnt" + str(pair)
+    if show is True:
+        print("tap_cnt    error")
+    # if sel == "1":
+    while j < 63:
+        # err_cnt1 = ttim.get("tap_err_cnt")
+        ttim.set("tap_cnt", j)
+        ttim.set("load_tap", pair)
+        ttim.set("load_tap", 0)
+        ttim.set("inject_reset", 1)
+        ttim.set("inject_reset", 0)
+        sleep(0.1)
+        # err_cnt2 = ttim.get("tap_err_cnt")
+        # err_cnt = err_cnt2 - err_cnt1
+        err_cnt = ttim.get(error_cnt)
+        if show is True:
+            print("%d    %d" % (j, err_cnt))
+        if err_cnt == 0:
+            points.append(j)
+        #     edge2 = j
+        #     eye_width2 = eye_width2 + 1
+        #     if eye_stop == 0:
+        #         edge1 = j
+        #         eye_width1 = eye_width1 + 1
+        # else:
+        #     eye_stop = 1
+        #     eye_width2 = 0
+
+        if err_cnt > 2000:
+            err_cnt = 2000
+        tap.append(j)
+        error.append(err_cnt)
+        j = j + 1
+    # print(points)
+    if len(points) > 0:
+        i = 0
+        edge = []  # eye edge list
+        eye = 1
+        while i < len(points):
+            if i + 1 == len(points):
+                edge.append((points[i + 1 - eye], points[i]))
+            elif points[i+1] - points[i] == 1:  # consecutive tap means inside eye
+                eye += 1
+            else:
+                edge.append((points[i+1-eye], points[i]))
+                eye = 1
+            i += 1
+        # print(edge)
+        tap_cnt = (edge[0][0] + edge[0][1]) // 2
+        eye = edge[0][1] - edge[0][0]
+        for i in range(len(edge) - 1):
+            eye2 = edge[i+1][1] - edge[i+1][0]
+            if eye2 > eye:
+                eye = eye2
+                tap_cnt = (edge[i+1][0] + edge[i+1][1]) // 2
+        # if eye_width1 >= eye_width2:
+        #     tap_cnt = edge1 - eye_width1 // 2
+        # else:
+        #     tap_cnt = edge2 - eye_width2 // 2
+        ttim.set("tap_cnt", tap_cnt)
+        ttim.set("load_tap", pair)
+        ttim.set("load_tap", 0)
+        ttim.set("inject_reset", 1)
+        ttim.set("inject_reset", 0)
+        return tap_cnt, tap, error
+    else:
+        return 99, tap, error  # no eye found
+
+
+def read_temperature(ttim):
+    temp = ttim.get("temp_regs")
+    voltage = ttim.get("pwr_regs")
+    fpga_reg = ttim.get("fpga_regs")
+    fpga_temp = (fpga_reg >> 24) * 503.975 / 4096 - 273.15
+    vccint = (fpga_reg >> 12 & 0xfff) * 3.0 / 4096
+    vccaux = (fpga_reg & 0xfff) * 3.0 / 4096
+    temp3 = (temp & 0x1ff) * 0.5
+    temp2 = (temp >> 9 & 0x1ff) * 0.5
+    temp1 = (temp >> 18) * 0.5
+    current = (voltage >> 24) * 0.0025
+    VDD = (voltage >> 12 & 0xfff) * 0.025
+    Vttim = (voltage & 0xfff) * 0.001
+    return (temp1, temp2, temp3, fpga_temp), (vccint, vccaux, current, VDD, Vttim)
+
+
+def read_error_cnt(ttim, channel):
+    ttim.set("channel_sel", channel)
+    cnt1 = ttim.get("error_cnt1")
+    cnt2 = ttim.get("error_cnt2")
+    return cnt1, cnt2
+
+
+def change_ip(ttim, ip):
+    string = "ip set " + ip + "\r"
+    ttim.uart_send(string)
+    return 0
+
+
+def uart_send(ttim, cmd: str):
+    """max command length should be less than 500 bytes"""
+    # string = "\r"
+    # string = cmd + "\r"
+    # string = cmd
+    ttim.uart_send("\r")
+    for i in range(len(cmd)):
+        ttim.uart_send(cmd[i])
+        sleep(0.1)
+    ttim.uart_send("\r")
+    return 0
+
+
 def main():
-    """This script is used for debug and test purpose. Function needed is based on Padova BEC_timing.py"""
+    """This script is used for debug and test purpose, supplies some frequently used control commands for the BEC"""
 
     vr = platform.python_version()
     print("Python version is %s" % vr)
@@ -62,7 +181,12 @@ def main():
     f = open(os.path.dirname(os.path.abspath(__file__)) + "/TTIM_ip.dat")
     host_ip = f.readline().strip()
     f.close()
-    ttim = TTIM(host_ip)
+    reg = os.path.dirname(os.path.abspath(__file__)) + "/TTIM_v2_registers.dat"
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(("", 2000))
+    sock.settimeout(2)
+    ttim = TTIM(host_ip, reg, sock)
+    # ttim = TTIM("192.168.10.120", reg)
     print("*" * 20)
     print("  TTIM_v2 test script")
     print("")
@@ -76,7 +200,7 @@ def main():
                     "5 = TTCRX error report of current channel\n"
                     "6 = PRBS error report of current channel\n"
                     "7 = broadcast rst errors\n"
-                    "8 = broadcast idle\n"
+                    "8 = set test mode\n"
                     "9 = GCU TTC calibration of current channel\n"
                     "10 = GCU L1A calibration of current channel\n"
                     "11 = toggle hit bits\n"
@@ -88,11 +212,14 @@ def main():
                     "17 = manual trigger\n"
                     "18 = sma select\n"
                     "19 = hit l1a debug\n"
+                    "20 = change mini-WR IP\n"
                     )
         if cmd == "q":
             exit()
         elif cmd == "1":
-            ttim.set("inject_reset", 4)
+            check = ttim.set("inject_reset", 4)
+            print(type(check))
+            print(check)
             sleep(1)
             print("done!\n")
         elif cmd == "2":
@@ -150,16 +277,9 @@ def main():
             sleep(1)
             print("done!\n")
         elif cmd == "8":
-            ttim.set("chb_req", 1)
-            i = 0
-            while i < 1:
-                grant = ttim.get("system_status") >> 3 & 1
-                # print(grant)
-                if grant == 1:
-                    i = 1
-            ttim.set("chb_req", 4)
-            ttim.set("chb_req", 0)
-            sleep(1)
+            test_mode = input("input test mode in HEX: ")
+            ttim.set("test_mode", int(test_mode, 16))
+            sleep(0.1)
             print("done!\n")
         elif cmd == "9":
             calibrate_ttc(ttim)
@@ -231,18 +351,7 @@ def main():
             ttc_align = hex(ttim.get("channel_rdy"))
             print("TTC RX ready: %s \n" % ttc_align)
             if version[2] == "3":
-                temp = ttim.get("temp_regs")
-                voltage = ttim.get("pwr_regs")
-                fpga_reg = ttim.get("fpga_regs")
-                fpga_temp = (fpga_reg >> 24) * 503.975 / 4096 - 273.15
-                vccint = (fpga_reg >> 12 & 0xfff) * 3.0 / 4096
-                vccaux = (fpga_reg & 0xfff) * 3.0 / 4096
-                temp3 = (temp & 0x1ff) * 0.5
-                temp2 = (temp >> 9 & 0x1ff) * 0.5
-                temp1 = (temp >> 18) * 0.5
-                current = (voltage >> 24) * 0.0025
-                VDD = (voltage >> 12 & 0xfff) * 0.025
-                Vttim = (voltage & 0xfff) * 0.001
+                (temp1, temp2, temp3, fpga_temp), (vccint, vccaux, current, VDD, Vttim) = read_temperature(ttim)
                 print("Temperature:")
                 print("Left: %.1f ℃  Middle: %.1f ℃  Right: %.1f ℃  FPGA: %.1f ℃" % (temp1, temp3, temp2, fpga_temp))
                 print("BEC Current: %.3f A   Vin: %.2f V   V_ttim: %.3f V" % (current, VDD, Vttim))
@@ -293,6 +402,10 @@ def main():
             print("hit in HEX: ", hit)
             print("l1a in BIN: ", l1a)
             sleep(1)
+        elif cmd == "20":
+            ip = input("new IP: ")
+            # change_ip(ttim, ip)
+            uart_send(ttim, ip)
         else:
             print("wrong input")
 

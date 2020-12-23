@@ -1,4 +1,4 @@
-import socket
+# import socket
 import TransElement
 import binascii
 import ChipsException
@@ -7,15 +7,11 @@ import ChipsException
 class LiteBus:
     MAX_TRANSACTION_ID = 7
 
-    def __init__(self, addr_table, host_ip, host_port, local_port=None):
+    def __init__(self, addr_table, host_ip, socket):
         self.__transID = 1
         self.addr_table = addr_table
-        self.__host_addr = (host_ip, host_port)
-        self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        if local_port is not None:
-            local_addr = ("", local_port)
-            self.__socket.bind(local_addr)
-        self.__socket.settimeout(2)
+        self.__host_addr = (host_ip, 2000)
+        self.__socket = socket
 
     def __get_transID(self):
         if self.__transID < LiteBus.MAX_TRANSACTION_ID:
@@ -54,22 +50,32 @@ class LiteBus:
         transaction = hex(self.__make_read_transaction(register))[2:]
         trans_str = binascii.unhexlify(transaction)
         self.__socket.sendto(trans_str, self.__host_addr)
-        raw_data = self.__socket.recvfrom(1024)[0]
+        try:
+            raw_data = self.__socket.recvfrom(1024)[0]
+            # print(hex(raw_data))
+            data_hex = int("0x" + binascii.hexlify(raw_data).decode(), 16)
+            data = self.__check_frame(data_hex)[2]
+            self.__get_transID()
+            return data
+        except Exception:
+            print("time out!")
+            return 0
         # print(raw_data)
-        data_hex = int("0x" + binascii.hexlify(raw_data).decode(), 16)
-        data = self.__check_frame(data_hex)[2]
-        self.__get_transID()
-        return data
 
     def write(self, register, value):
         transaction = hex(self.__make_write_transaction(register, value))[2:]
         trans_str = binascii.unhexlify(transaction)
         self.__socket.sendto(trans_str, self.__host_addr)
-        raw_data = self.__socket.recvfrom(1024)[0]
+        try:
+            raw_data = self.__socket.recvfrom(1024)[0]
+            # data = binascii.hexlify(raw_data).decode()
+            return value
+            # print(hex(raw_data))
+        except Exception:
+            return "time out!"
         # data_hex = int("0x" + binascii.hexlify(raw_data).decode(), 16)
         # data = self.__check_frame(data_hex)[2]
         # self.__get_transID()
-        return value
 
     def program(self, value_string):
         transaction = TransElement.program_transaction(value_string)
@@ -77,8 +83,13 @@ class LiteBus:
         trans_str = binascii.unhexlify(transaction)
         # print(trans_str)
         self.__socket.sendto(trans_str, self.__host_addr)
-        raw_data = self.__socket.recvfrom(1024)[0]
-        return 0  #
+        try:
+            raw_data = self.__socket.recvfrom(1024)[0]
+            data = binascii.hexlify(raw_data).decode()
+            return int(data, 16)  #
+        except Exception:
+            return "time out!"
+        # return 0
 
     def program_status(self):
         transaction = 0x55550000
@@ -95,8 +106,12 @@ class LiteBus:
         trans_str = binascii.unhexlify(hex(transaction)[2:])
         self.__socket.sendto(trans_str, self.__host_addr)
         raw_data = self.__socket.recvfrom(1024)[0]
-        return 0
+        data = binascii.hexlify(raw_data).decode()
+        return data
 
-        # def show_registers(self):
-        # return self.addr_table.show_registers
+    def uart_write(self, string):
+        transaction = bytes(TransElement.uart_transaction(string), encoding="ascii")
+        self.__socket.sendto(transaction, self.__host_addr)
+        self.__socket.recvfrom(1024)
+        return 0
 

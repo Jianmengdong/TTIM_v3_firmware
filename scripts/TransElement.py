@@ -16,3 +16,7 @@ def write_transaction(trans_id, reg_addr, value):
 def program_transaction(value_string):
     transaction = LiteBusHeader.PROG_HEADER + value_string
     return transaction
+
+
+def uart_transaction(string):
+    return LiteBusHeader.UART_HEADER + string

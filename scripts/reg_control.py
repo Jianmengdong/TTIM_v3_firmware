@@ -1,13 +1,17 @@
-from TTIM_v2 import *
+from TTIM_tools import *
 # from time import sleep
 import os
 
 
 def main():
-    f = open(os.path.dirname(os.path.abspath(__file__)) + "/TTIM_ip.dat")
-    host_ip = f.readline().strip()
-    f.close()
-    ttim = TTIM(host_ip)
+    ip = open(os.path.dirname(os.path.abspath(__file__)) + "/TTIM_ip.dat")
+    reg = os.path.dirname(os.path.abspath(__file__)) + "/TTIM_v2_registers.dat"
+    host_ip = ip.readline().strip()
+    ip.close()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(("", 2000))
+    sock.settimeout(2)
+    ttim = TTIM(host_ip, reg, sock)
     # ttim_ip = "192.168.10.11"
     # invert_tx1 = ec521826eca(test_base)  f13ade7d9135(BEC)
     print("*" * 20)
@@ -19,6 +23,7 @@ def main():
     while True:
         command = input("cmd: ")
         if command == "quit":
+
             break
         elif command == "show registers":
             reg_list = ttim.show_registers()

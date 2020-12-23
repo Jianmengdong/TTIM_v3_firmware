@@ -11,6 +11,7 @@ TYPE_WRITE = 0x1
 # header type
 SC_HEADER = 0x4
 PROG_HEADER = "55"
+UART_HEADER = "f"  # 0x66
 
 
 #  make header for a specific transaction
