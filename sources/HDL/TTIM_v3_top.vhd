@@ -88,7 +88,7 @@ end TTIM_v3_top;
 architecture Behavioral of TTIM_v3_top is
 
     constant hw_version : std_logic_vector(15 downto 0) := x"0300"; --major[7:4] minor[3:0]
-    constant fw_version : std_logic_vector(15 downto 0) := x"02FF"; --major[7:4] minor[3:0]
+    constant fw_version : std_logic_vector(15 downto 0) := x"FFFF"; --major[7:4] minor[3:0]
                                                                     --x"FFFF" for golden image
     
     signal pps_i : std_logic;
@@ -127,7 +127,7 @@ architecture Behavioral of TTIM_v3_top is
     signal v_en_trig : std_logic_vector(4 downto 0);
     signal v_chb_req,v_idle,v_l1a_go_prbs,v_tap_cal_enable,v_l1a_cal_enable,v_manual_trig,v_fake_hit : std_logic;
     signal v_hit_toggle,s_hit_toggle : std_logic_vector(47 downto 0);
-    signal v_threshold : std_logic_vector(7 downto 0);
+    signal v_threshold,trigger_type : std_logic_vector(7 downto 0);
     signal v_period : std_logic_vector(31 downto 0);
     signal ch_sel : integer range 0 to 47;
     signal sma_sel,v_sma_sel,pps_r : std_logic;
@@ -142,10 +142,11 @@ architecture Behavioral of TTIM_v3_top is
     signal hit_debug,l1a_debug : std_logic_vector(47 downto 0);
     signal trig_window_i,v_trig_window : std_logic_vector(3 downto 0);
     signal trig_rate_s,trig_rate_t : std_logic_vector(23 downto 0);
-    signal sys_clk_32M_i,re_load,loop_test : std_logic;
+    signal sys_clk_32M_i,re_load,end_of_update,loop_test : std_logic;
+    signal auto_trigger : std_logic;
     signal tx1_t, tx2_t,sys_clkg : std_logic;
     signal reset_sync_links : std_logic_vector(47 downto 0);
-    signal reset_trig_link,start_wr_done : std_logic;
+    signal reset_trig_link,start_wr_done,manual_auto_trig : std_logic;
     signal led_i : std_logic_vector(1 downto 0);
     signal startup_status : std_logic_vector(2 downto 0);
     signal retry_cnt : std_logic_vector(3 downto 0);
@@ -198,9 +199,10 @@ Inst_wr_interface:entity work.wr_interface2
     update_error => update_error,
     update_status => update_status,
     update_control => update_control,
+    end_of_update => end_of_update,
+    re_load => re_load,
     uart_tx => wr_uart_tx,
     uart_rx => wr_uart_rx,
-    re_load => re_load,
     pps_o => pps_i,
     pps_original => open,
     timestamp_o => timestamp_i,
@@ -225,6 +227,7 @@ Inst_remote_update:entity work.remote_update_top
     outSFPStatus    => update_status,
     outSFPError     => update_error,
     inUpdateControl => update_control,
+    end_of_update => end_of_update,
     re_load => re_load
     );
 --=======================================--
@@ -251,6 +254,7 @@ Inst_trig_gen:entity work.trigger_gen
     en_trig_i => en_trig_i,
     ext_trig_i => ext_trig_i,
     l1a_o => l1a_i,
+    trig_type_o => trigger_type,
     trig_i => trig_i,
     trig_window_i => trig_window_i,
     global_time_i => timestamp_i,
@@ -258,6 +262,7 @@ Inst_trig_gen:entity work.trigger_gen
     threshold_i => threshold_i,
     hit_i => hit_i,
     nhit_o => nhit_i,
+    auto_trigger => auto_trigger,
     fake_hit => fake_hit,
     fake_hit_max => fake_hit_max,
     led => LED(2)
@@ -308,6 +313,8 @@ Inst_sync_link:entity work.sync_links
     pps_i => pps_i,
     trig_rate_o => trig_rate_s,
     l1a_i       => l1a_i,
+    trigger_type => trigger_type,
+    auto_trigger => auto_trigger or manual_auto_trig,
     nhit_gcu_o  => hit_i,
     timestamp_i => timestamp_48b,
     loss_counter_o => loss_counter,
@@ -402,6 +409,7 @@ Inst_startup: entity work.startup
     s_tap_calib_enable <= register_array(14)(0) when use_vio = '0' else v_tap_cal_enable;
     s_l1a_tap_calib_enable <= register_array(14)(1) when use_vio = '0' else v_l1a_cal_enable;
     manual_trig <= register_array(15)(0) when use_vio = '0' else v_manual_trig;
+    manual_auto_trig <= register_array(15)(1);
     sma_sel <= register_array(16)(0) when use_vio = '0' else v_sma_sel;
     s_hit_toggle <= register_array(17) when use_vio = '0' else v_hit_toggle;
     fake_hit <= register_array(18)(0) when use_vio = '0' else v_fake_hit;
@@ -493,7 +501,7 @@ Inst_startup: entity work.startup
     Inst_ila:entity work.ila_0
     port map(
     clk => sys_clk_125M_i,
-    probe0 => timestamp_i,
+    probe0 => trig_error_cnt,
     probe1 => timestamp_48b,
     probe2 => error_time1_o,
     probe3 => error_time2_o,

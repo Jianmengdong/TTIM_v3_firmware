@@ -53,12 +53,15 @@ entity trigger_gen is
     trig_i : in std_logic_vector(15 downto 0);
     trig_window_i : in std_logic_vector(3 downto 0);
     l1a_o : out std_logic;
+    trig_type_o : out std_logic_vector(7 downto 0);
     global_time_i : in std_logic_vector(67 downto 0);
     period_i : in std_logic_vector(31 downto 0); --x03B9 ACA0 => 1Hz  x0000F424 => 1KHz
     threshold_i : in std_logic_vector(7 downto 0);
     hit_i : in t_array2(47 downto 0);
     nhit_o : out std_logic_vector(7 downto 0);
     rst_event : out std_logic;
+    auto_trigger : out std_logic;
+    
     fake_hit : in std_logic;
     fake_hit_max : out std_logic;
     led : out std_logic
@@ -89,8 +92,9 @@ architecture Behavioral of trigger_gen is
     signal pps_r,pps_r2 : std_logic;
 
 begin
-l1a_o <= accept when dead_time = '0' else '0';
+-- l1a_o <= accept when dead_time = '0' else '0';
 rst_event <= trig_cnt(8);
+auto_trigger <= trig_i(15) and trig_i(10);
 w <= to_integer(unsigned(trig_window_i));
 process(clk_i)
 begin
@@ -113,21 +117,28 @@ begin
     end if;
 end process;
 --generate trig and catch trigger time, count trigger numbers
+accept <= trig_ctu or ext_trig(1) or ext_trig(0) or trig_per or trig_phy;
 process(clk_i)
 begin
     if reset_i = '1' then
-        accept <= '0';
         trig_time <= (others => '0');
         trig_cnt <= (others => '0');
     elsif rising_edge(clk_i) then
-        accept <= trig_ctu or ext_trig(1) or ext_trig(0) or trig_per or trig_phy;
         if accept = '1' then
+            if dead_time = '0' then
+                l1a_o <= '1';
+            end if;
             trig_time <= global_time_i;
+            trig_type_o <= ext_trig&trig_per&trig_i(12 downto 8);
             if reset_event_cnt_i = '1' then
                 trig_cnt <= (others => '0');
             else
                 trig_cnt <= trig_cnt + 1;
             end if;
+        else
+            l1a_o <= '0';
+            trig_type_o <= x"00";
+            trig_time <= (others => '0');
         end if;
     end if;
 end process;
@@ -156,7 +167,7 @@ begin
     end if;
 end process;
 ---- trigger enable----------
-trig_ctu <= trig_i(15) when en_trig_i(4) = '1' else '0';
+trig_ctu <= trig_i(15) when (en_trig_i(4) = '1' and trig_i(10) = '0') else '0';
 trig_per <= trig_per_i when en_trig_i(1) = '1' else '0';
 trig_phy <= trig_phy_i when en_trig_i(0) = '1' else '0';
 ---- resize the hit from GCU

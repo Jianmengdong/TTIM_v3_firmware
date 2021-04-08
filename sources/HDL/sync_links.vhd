@@ -33,6 +33,8 @@ entity sync_links is
     loop_test : in std_logic;
     test_mode_i : in std_logic_vector(47 downto 0);
     l1a_i : in std_logic;
+    trigger_type : in std_logic_vector(7 downto 0);
+    auto_trigger : in std_logic;
     pps_i   : in std_logic;
     trig_rate_o : out std_logic_vector(23 downto 0);
     nhit_gcu_o : out t_array2(47 downto 0);
@@ -103,6 +105,7 @@ architecture Behavioral of sync_links is
     signal s_l1a_err_count,s_comm_err_count_v : t_array32(47 downto 0);
     signal ptp_fsm : std_logic_vector(4 downto 0);
     signal ptp_gcu_no : std_logic_vector(5 downto 0);
+    signal s_chb_grant1_i,brd_cmd_req,autotrigger : std_logic;
     signal s_ttc_tap_rst,s_ttc_tap_incr,s_l1a_tap_rst,s_l1a_tap_incr : std_logic;
     signal s_ttc_tap_error_count,s_l1a_tap_error_count : std_logic_vector(31 downto 0);
 begin
@@ -210,7 +213,7 @@ Inst_ttc_encoder : entity work.ttc_encoder
     locked_i         => sys_clk_lock,
     clk_x2_i         => clk_x2_i,
     brd_cmd_vector_i => brd_cmd_vector,
-    l1a_i            => l1a_i,
+    l1a_i            => '0',
     long_frame1_i    => s_long_frame_in1,
     long_frame2_i    => s_long_frame_in2,
     long_frame3_i      => s_long_frame_in3,  -- PORT4 eye scan
@@ -220,7 +223,7 @@ Inst_ttc_encoder : entity work.ttc_encoder
     long_frame7_i      => s_long_frame_in7,  -- PORT8 trigger 
     ttc_stream_o     => ttc_stream, --TTC up link
     chb_busy_o       => chb_busy_o,
-    chb_grant1_o     => s_chb_grant1, --brd cmd channel
+    chb_grant1_o     => s_chb_grant1_i, --brd cmd channel
     chb_grant2_o     => s_chb_grant2,
     chb_grant3_o     => s_chb_grant3,
     chb_grant4_o       => s_chb_grant4,
@@ -228,7 +231,7 @@ Inst_ttc_encoder : entity work.ttc_encoder
     chb_grant6_o       => s_chb_grant6,
     chb_grant7_o       => s_chb_grant7,
     chb_grant8_o       => s_chb_grant8, 
-    chb_req1_i       => s_chb_req1,
+    chb_req1_i       => s_chb_req1 or brd_cmd_req,
     chb_req2_i       => s_chb_req2,
     chb_req3_i       => s_chb_req3,
     chb_req4_i         => s_chb_req4,
@@ -238,6 +241,8 @@ Inst_ttc_encoder : entity work.ttc_encoder
     chb_req8_i         => s_chb_req8,
     ready_o          => s_ttctx_ready
     );
+    s_chb_grant1 <= s_chb_grant1_i;
+    
     brd_cmd_vector.idle           <= ttc_idle;
     brd_cmd_vector.rst_time       <= '0';
     brd_cmd_vector.rst_event      <= '0';
@@ -246,9 +251,17 @@ Inst_ttc_encoder : entity work.ttc_encoder
     brd_cmd_vector.test_pulse     <= '0';
     brd_cmd_vector.time_request   <= '0';
     brd_cmd_vector.rst_errors     <= ttc_rst_error;
-    brd_cmd_vector.autotrigger    <= '0';
+    brd_cmd_vector.autotrigger    <= autotrigger;
     brd_cmd_vector.en_acquisition <= '0';
     ttctx_ready <= s_ttctx_ready;
+    autotriggerHandle: entity work.auto_trigger_req
+    port map(
+    clk_i => clk_x2_i,
+    auto_trigger_i => auto_trigger,
+    chb_req_o => brd_cmd_req,
+    chb_grant_i => s_chb_grant1_i,
+    autotrigger_o => autotrigger
+    );
   select_eye_cal_l1a : process (s_l1a_tap_calib_enable) is
   begin  -- process select_eye_cal_l1a
     case s_l1a_tap_calib_enable is
@@ -331,6 +344,7 @@ ttc_trg_time_1 : entity work.ttc_trg_time
     pps_i => pps_i,
     trig_rate_o => trig_rate_o,
       local_trigger_i => l1a_i,
+      trig_type_i => trigger_type,
       chb_grant_i     => s_chb_grant8,
       chb_req_o       => s_chb_req8,
       ttc_long_o      => s_long_frame_in7,

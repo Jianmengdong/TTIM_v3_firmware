@@ -28,9 +28,10 @@ entity wr_interface2 is
     update_error : in std_logic_vector(5 downto 0);
     update_status : in std_logic_vector(8 downto 0);
     update_control : out std_logic_vector(19 downto 0);
+    re_load : out std_logic;
+    end_of_update : out std_logic;
     uart_tx : inout std_logic;
     uart_rx : in std_logic;
-    re_load : out std_logic;
     PPS_IN_P : in std_logic;
     PPS_IN_N : in std_logic;
     pps_o : out std_logic;
@@ -59,7 +60,7 @@ end wr_interface2;
     signal wr_tx_cts,wr_tx_vld : std_logic;
     signal data_send : std_logic_vector(159 downto 0);
     signal data_tx : std_logic_vector(79 downto 0);
-    signal data_buf : t_array8(511 downto 0) := (others => (others => '0'));
+    signal data_buf : t_array8(255 downto 0) := (others => (others => '0'));
     -- type t_state is (st0_idle,st0_get_port,st1_get_data,st2_assmble_data,
                     -- st3_wait_respond,st3_uart_fifo,st4_respond,st5_CRC_error,st5_addr_error,
                     -- st5_timeout_error,st5_overflow_error);
@@ -79,6 +80,8 @@ end wr_interface2;
     signal uart_fifo_rd_en,uart_fifo_wr_en,uart_fifo_wr_en_r,uart_fifo_valid : std_logic;
     signal st_uart : std_logic_vector(3 downto 0);
     signal len_std : std_logic_vector(9 downto 0);
+    signal len_u : unsigned(9 downto 0);
+    signal len : integer range 0 to 256;
     
 begin
 tie_to_vcc <= '1';
@@ -106,7 +109,7 @@ Inst_timer:entity work.fmc_timer
     timestamp_48b_o <= std_logic_vector(timer_total(47 downto 0));
 p_latch_wr_data:process(sys_clk_i)
 begin
-    if falling_edge(sys_clk_i) then
+    if rising_edge(sys_clk_i) then
         wr_rx_ctrl <= PDATA_RX(9 downto 8);
         wr_rx_data <= PDATA_RX(3 downto 0) & PDATA_RX(7 downto 4);
         --PDATA_TX <= wr_tx_vld & 'Z' & wr_tx_data;
@@ -126,7 +129,7 @@ end process;
 process(sys_clk_i)
 variable cnt : integer range 0 to 31;
 variable s : integer range 0 to 512;
-variable len : integer range 0 to 512;
+-- variable len : integer range 0 to 512;
 variable time_out_cnt : integer range 0 to 65535;
 begin
     if reset_i = '1' then
@@ -142,13 +145,14 @@ begin
                 data_send <= (others => '0');
                 uart_fifo_wr_en_r <= '0';
                 cnt := 0;
-                len := 0;
-                re_load <= '0';
+                len_u <= (others => '0');
+                --re_load <= '0';
                 time_out_cnt := 0;
+                --end_of_update <= '0';
                 if wr_rx_ctrl_i = "01" then
                     if wr_rx_data_i = x"AB" then
                         state <= st0_get_port;
-                        --len := 1;
+                        --len <= 1;
                         --data_buf(7 downto 0) <= wr_rx_data_i;
                     else
                         state <= st2_assmble_data;
@@ -160,10 +164,10 @@ begin
                 state <= st1_get_data;  -- x"C0"
             when st1_get_data =>
                 data_buf(len) <= wr_rx_data_i;
-                len := len + 1;
+                len_u <= len_u + 1;
                 if wr_rx_ctrl_i = "10" then
                     state <= st2_assmble_data;
-                elsif len = 512 then
+                elsif len = 256 then
                     state <= st5_overflow_error;
                 elsif wr_rx_ctrl_i = "11" then
                     state <= st5_CRC_error;
@@ -185,6 +189,7 @@ begin
                     else
                         update_control <= data_buf(1)(3 downto 0)&data_buf(2)&data_buf(3);
                         re_load <= data_buf(1)(4);
+                        end_of_update <= data_buf(1)(5);
                         data_send(159 downto 128) <= x"ABC00000";
                     end if;
                 elsif data_buf(0)(7 downto 4) = x"4" then -- LiteBus packets
@@ -275,8 +280,9 @@ begin
                 state <= st0_idle;
         end case;
     end if;
-len_std <= std_logic_vector(to_unsigned(len, 10));
 end process;
+len_std <= std_logic_vector(len_u);
+len <= to_integer(len_u);
 process(sys_clk_i)
 begin
     if rising_edge(sys_clk_i) then

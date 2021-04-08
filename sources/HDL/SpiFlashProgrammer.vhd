@@ -88,6 +88,7 @@ entity SpiFlashProgrammer is
     inVerify            : in std_logic;
     inChangeModeOnly    : in std_logic;
     inModeRegister      : in std_logic_vector(15 downto 0);
+    end_of_update   : in std_logic;
 
     -- Data
     inData32            : in  std_logic_vector(31 downto 0);
@@ -526,6 +527,12 @@ begin
               regCounter10        <= regCounter10 - cDataWordWidth;
               stateProgrammer     <= sProgrammerSendWord;
               stateAfterSendWord  <= sProgrammerProgramUpdateArea4;
+            elsif end_of_update = '1' then
+                regData40 <= x"FFFFFFFF" & X"00";
+                regCounter3       <= "100";
+                regCounter10        <= x"00"&"00";
+              stateProgrammer     <= sProgrammerSendWord;
+              stateAfterSendWord  <= sProgrammerProgramUpdateArea4;
             end if;
             debug_fsm <= x"0b";
 
@@ -536,7 +543,7 @@ begin
               regTimer                  <= cCmdPPTimeOut;
               stateErrorTimeOut         <= sProgrammerErrorProgramTO;
               stateProgrammer           <= sProgrammerPollStatus;
-              if (regCounter32 = cAddrUpdateEnd) then
+              if (regCounter32 = cAddrUpdateEnd) or end_of_update = '1' then
                 regProgramOK            <= '1';
                 if regVerify = '1' then
                     stateAfterPollStatus    <= sProgrammerVerifyUpdateArea;
@@ -909,16 +916,16 @@ begin
   outSSDStartTransfer <= regSSDStartTransfer;
   outSSDData8Send     <= regSSDData8Send;
   
-  -- inst_ila : entity work.ila_2
-  -- port map(
-  -- clk => inClk,
-  -- probe0 => debug_fsm,
-  -- probe1 => regData40,
-  -- probe2 => regError,
-  -- probe3 => regCounter3,
-  -- probe4 => regCounter32,
-  -- probe5 => regCounter10
-  -- );
+  inst_ila : entity work.ila_2
+  port map(
+  clk => inClk,
+  probe0 => debug_fsm,
+  probe1 => regData40,
+  probe2(0) => end_of_update,
+  probe3 => regCounter3,
+  probe4 => regCounter32,
+  probe5 => regCounter10
+  );
 
 end behavioral;
 

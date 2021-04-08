@@ -10,77 +10,41 @@
         <Option Id="HW_ILA" value="Inst_ila"/>
         <Option Id="PROBE_PORT" value="0"/>
         <Option Id="PROBE_PORT_BITS" value="0"/>
-        <Option Id="PROBE_PORT_BIT_COUNT" value="68"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="32"/>
       </probeOptions>
       <nets>
-        <net name="timestamp_i[67]"/>
-        <net name="timestamp_i[66]"/>
-        <net name="timestamp_i[65]"/>
-        <net name="timestamp_i[64]"/>
-        <net name="timestamp_i[63]"/>
-        <net name="timestamp_i[62]"/>
-        <net name="timestamp_i[61]"/>
-        <net name="timestamp_i[60]"/>
-        <net name="timestamp_i[59]"/>
-        <net name="timestamp_i[58]"/>
-        <net name="timestamp_i[57]"/>
-        <net name="timestamp_i[56]"/>
-        <net name="timestamp_i[55]"/>
-        <net name="timestamp_i[54]"/>
-        <net name="timestamp_i[53]"/>
-        <net name="timestamp_i[52]"/>
-        <net name="timestamp_i[51]"/>
-        <net name="timestamp_i[50]"/>
-        <net name="timestamp_i[49]"/>
-        <net name="timestamp_i[48]"/>
-        <net name="timestamp_i[47]"/>
-        <net name="timestamp_i[46]"/>
-        <net name="timestamp_i[45]"/>
-        <net name="timestamp_i[44]"/>
-        <net name="timestamp_i[43]"/>
-        <net name="timestamp_i[42]"/>
-        <net name="timestamp_i[41]"/>
-        <net name="timestamp_i[40]"/>
-        <net name="timestamp_i[39]"/>
-        <net name="timestamp_i[38]"/>
-        <net name="timestamp_i[37]"/>
-        <net name="timestamp_i[36]"/>
-        <net name="timestamp_i[35]"/>
-        <net name="timestamp_i[34]"/>
-        <net name="timestamp_i[33]"/>
-        <net name="timestamp_i[32]"/>
-        <net name="timestamp_i[31]"/>
-        <net name="timestamp_i[30]"/>
-        <net name="timestamp_i[29]"/>
-        <net name="timestamp_i[28]"/>
-        <net name="timestamp_i[27]"/>
-        <net name="timestamp_i[26]"/>
-        <net name="timestamp_i[25]"/>
-        <net name="timestamp_i[24]"/>
-        <net name="timestamp_i[23]"/>
-        <net name="timestamp_i[22]"/>
-        <net name="timestamp_i[21]"/>
-        <net name="timestamp_i[20]"/>
-        <net name="timestamp_i[19]"/>
-        <net name="timestamp_i[18]"/>
-        <net name="timestamp_i[17]"/>
-        <net name="timestamp_i[16]"/>
-        <net name="timestamp_i[15]"/>
-        <net name="timestamp_i[14]"/>
-        <net name="timestamp_i[13]"/>
-        <net name="timestamp_i[12]"/>
-        <net name="timestamp_i[11]"/>
-        <net name="timestamp_i[10]"/>
-        <net name="timestamp_i[9]"/>
-        <net name="timestamp_i[8]"/>
-        <net name="timestamp_i[7]"/>
-        <net name="timestamp_i[6]"/>
-        <net name="timestamp_i[5]"/>
-        <net name="timestamp_i[4]"/>
-        <net name="timestamp_i[3]"/>
-        <net name="timestamp_i[2]"/>
-        <net name="timestamp_i[1]"/>
-        <net name="timestamp_i[0]"/>
+        <net name="trig_error_cnt[31]"/>
+        <net name="trig_error_cnt[30]"/>
+        <net name="trig_error_cnt[29]"/>
+        <net name="trig_error_cnt[28]"/>
+        <net name="trig_error_cnt[27]"/>
+        <net name="trig_error_cnt[26]"/>
+        <net name="trig_error_cnt[25]"/>
+        <net name="trig_error_cnt[24]"/>
+        <net name="trig_error_cnt[23]"/>
+        <net name="trig_error_cnt[22]"/>
+        <net name="trig_error_cnt[21]"/>
+        <net name="trig_error_cnt[20]"/>
+        <net name="trig_error_cnt[19]"/>
+        <net name="trig_error_cnt[18]"/>
+        <net name="trig_error_cnt[17]"/>
+        <net name="trig_error_cnt[16]"/>
+        <net name="trig_error_cnt[15]"/>
+        <net name="trig_error_cnt[14]"/>
+        <net name="trig_error_cnt[13]"/>
+        <net name="trig_error_cnt[12]"/>
+        <net name="trig_error_cnt[11]"/>
+        <net name="trig_error_cnt[10]"/>
+        <net name="trig_error_cnt[9]"/>
+        <net name="trig_error_cnt[8]"/>
+        <net name="trig_error_cnt[7]"/>
+        <net name="trig_error_cnt[6]"/>
+        <net name="trig_error_cnt[5]"/>
+        <net name="trig_error_cnt[4]"/>
+        <net name="trig_error_cnt[3]"/>
+        <net name="trig_error_cnt[2]"/>
+        <net name="trig_error_cnt[1]"/>
+        <net name="trig_error_cnt[0]"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
@@ -704,12 +668,190 @@
         <net name="nhit_i[0]"/>
       </nets>
     </probe>
+    <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_UUID" value="cad02f88dbf95f5193c20c1cddee5a98"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
+        <Option Id="HW_ILA" value="Inst_remote_update/iSpiFlashProgrammer/inst_ila"/>
+        <Option Id="PROBE_PORT" value="0"/>
+        <Option Id="PROBE_PORT_BITS" value="0"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="8"/>
+      </probeOptions>
+      <nets>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/debug_fsm[7]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/debug_fsm[6]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/debug_fsm[5]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/debug_fsm[4]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/debug_fsm[3]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/debug_fsm[2]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/debug_fsm[1]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/debug_fsm[0]"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_UUID" value="cad02f88dbf95f5193c20c1cddee5a98"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
+        <Option Id="HW_ILA" value="Inst_remote_update/iSpiFlashProgrammer/inst_ila"/>
+        <Option Id="PROBE_PORT" value="1"/>
+        <Option Id="PROBE_PORT_BITS" value="0"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="40"/>
+      </probeOptions>
+      <nets>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[39]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[38]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[37]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[36]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[35]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[34]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[33]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[32]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[31]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[30]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[29]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[28]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[27]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[26]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[25]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[24]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[23]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[22]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[21]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[20]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[19]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[18]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[17]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[16]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[15]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[14]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[13]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[12]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[11]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[10]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[9]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[8]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[7]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[6]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[5]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[4]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[3]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[2]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[1]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regData40[0]"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_UUID" value="cad02f88dbf95f5193c20c1cddee5a98"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
+        <Option Id="HW_ILA" value="Inst_remote_update/iSpiFlashProgrammer/inst_ila"/>
+        <Option Id="PROBE_PORT" value="2"/>
+        <Option Id="PROBE_PORT_BITS" value="0"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
+      </probeOptions>
+      <nets>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/end_of_update"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_UUID" value="cad02f88dbf95f5193c20c1cddee5a98"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
+        <Option Id="HW_ILA" value="Inst_remote_update/iSpiFlashProgrammer/inst_ila"/>
+        <Option Id="PROBE_PORT" value="3"/>
+        <Option Id="PROBE_PORT_BITS" value="0"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="3"/>
+      </probeOptions>
+      <nets>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter3[2]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter3[1]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter3[0]"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_UUID" value="cad02f88dbf95f5193c20c1cddee5a98"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
+        <Option Id="HW_ILA" value="Inst_remote_update/iSpiFlashProgrammer/inst_ila"/>
+        <Option Id="PROBE_PORT" value="4"/>
+        <Option Id="PROBE_PORT_BITS" value="0"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="32"/>
+      </probeOptions>
+      <nets>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[31]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[30]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[29]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[28]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[27]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[26]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[25]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[24]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[23]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[22]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[21]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[20]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[19]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[18]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[17]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[16]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[15]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[14]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[13]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[12]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[11]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[10]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[9]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[8]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[7]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[6]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[5]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[4]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[3]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[2]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[1]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter32[0]"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_UUID" value="cad02f88dbf95f5193c20c1cddee5a98"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
+        <Option Id="HW_ILA" value="Inst_remote_update/iSpiFlashProgrammer/inst_ila"/>
+        <Option Id="PROBE_PORT" value="5"/>
+        <Option Id="PROBE_PORT_BITS" value="0"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="10"/>
+      </probeOptions>
+      <nets>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter10[9]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter10[8]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter10[7]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter10[6]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter10[5]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter10[4]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter10[3]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter10[2]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter10[1]"/>
+        <net name="Inst_remote_update/iSpiFlashProgrammer/regCounter10[0]"/>
+      </nets>
+    </probe>
     <probe type="vio_input" busType="bus" source="netlist" spec="VIO_INPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="ACTIVITY_PERSISTENCE" value="SHORT"/>
         <Option Id="ACTIVITY_VALUE" value=""/>
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -775,7 +917,7 @@
         <Option Id="ACTIVITY_PERSISTENCE" value="SHORT"/>
         <Option Id="ACTIVITY_VALUE" value=""/>
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -794,7 +936,7 @@
         <Option Id="ACTIVITY_PERSISTENCE" value="SHORT"/>
         <Option Id="ACTIVITY_VALUE" value=""/>
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -813,7 +955,7 @@
         <Option Id="ACTIVITY_PERSISTENCE" value="SHORT"/>
         <Option Id="ACTIVITY_VALUE" value=""/>
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -832,7 +974,7 @@
         <Option Id="ACTIVITY_PERSISTENCE" value="SHORT"/>
         <Option Id="ACTIVITY_VALUE" value=""/>
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -851,7 +993,7 @@
         <Option Id="ACTIVITY_PERSISTENCE" value="SHORT"/>
         <Option Id="ACTIVITY_VALUE" value=""/>
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -870,7 +1012,7 @@
         <Option Id="ACTIVITY_PERSISTENCE" value="SHORT"/>
         <Option Id="ACTIVITY_VALUE" value=""/>
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -887,7 +1029,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -904,7 +1046,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -968,7 +1110,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1032,7 +1174,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1096,7 +1238,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1160,7 +1302,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1224,7 +1366,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1247,7 +1389,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1269,7 +1411,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1287,7 +1429,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1304,7 +1446,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1321,7 +1463,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1338,7 +1480,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1402,7 +1544,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1423,7 +1565,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1440,7 +1582,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1457,7 +1599,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1474,7 +1616,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1491,7 +1633,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1508,7 +1650,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1525,7 +1667,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1589,7 +1731,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1606,7 +1748,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1630,7 +1772,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1678,7 +1820,7 @@
     <probe type="vio_output" busType="net" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1695,7 +1837,7 @@
     <probe type="vio_output" busType="bus" source="netlist" spec="VIO_OUTPUT_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:1"/>
+        <Option Id="CORE_LOCATION" value="1:2"/>
         <Option Id="CORE_UUID" value="5503722c68b3565483b33fc6ff0ea44e"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_VIO" value="Inst_vio"/>
@@ -1715,7 +1857,7 @@
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:2"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
         <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
@@ -1731,7 +1873,7 @@
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:2"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
         <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
@@ -1753,7 +1895,7 @@
     <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:2"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
         <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
@@ -1768,7 +1910,7 @@
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:2"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
         <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
@@ -1790,7 +1932,7 @@
     <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:2"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
         <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
@@ -1805,293 +1947,73 @@
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:2"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
         <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
         <Option Id="PROBE_PORT" value="5"/>
         <Option Id="PROBE_PORT_BITS" value="0"/>
-        <Option Id="PROBE_PORT_BIT_COUNT" value="160"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="8"/>
       </probeOptions>
       <nets>
-        <net name="Inst_wr_interface/data_buf[159]"/>
-        <net name="Inst_wr_interface/data_buf[158]"/>
-        <net name="Inst_wr_interface/data_buf[157]"/>
-        <net name="Inst_wr_interface/data_buf[156]"/>
-        <net name="Inst_wr_interface/data_buf[155]"/>
-        <net name="Inst_wr_interface/data_buf[154]"/>
-        <net name="Inst_wr_interface/data_buf[153]"/>
-        <net name="Inst_wr_interface/data_buf[152]"/>
-        <net name="Inst_wr_interface/data_buf[151]"/>
-        <net name="Inst_wr_interface/data_buf[150]"/>
-        <net name="Inst_wr_interface/data_buf[149]"/>
-        <net name="Inst_wr_interface/data_buf[148]"/>
-        <net name="Inst_wr_interface/data_buf[147]"/>
-        <net name="Inst_wr_interface/data_buf[146]"/>
-        <net name="Inst_wr_interface/data_buf[145]"/>
-        <net name="Inst_wr_interface/data_buf[144]"/>
-        <net name="Inst_wr_interface/data_buf[143]"/>
-        <net name="Inst_wr_interface/data_buf[142]"/>
-        <net name="Inst_wr_interface/data_buf[141]"/>
-        <net name="Inst_wr_interface/data_buf[140]"/>
-        <net name="Inst_wr_interface/data_buf[139]"/>
-        <net name="Inst_wr_interface/data_buf[138]"/>
-        <net name="Inst_wr_interface/data_buf[137]"/>
-        <net name="Inst_wr_interface/data_buf[136]"/>
-        <net name="Inst_wr_interface/data_buf[135]"/>
-        <net name="Inst_wr_interface/data_buf[134]"/>
-        <net name="Inst_wr_interface/data_buf[133]"/>
-        <net name="Inst_wr_interface/data_buf[132]"/>
-        <net name="Inst_wr_interface/data_buf[131]"/>
-        <net name="Inst_wr_interface/data_buf[130]"/>
-        <net name="Inst_wr_interface/data_buf[129]"/>
-        <net name="Inst_wr_interface/data_buf[128]"/>
-        <net name="Inst_wr_interface/data_buf[127]"/>
-        <net name="Inst_wr_interface/data_buf[126]"/>
-        <net name="Inst_wr_interface/data_buf[125]"/>
-        <net name="Inst_wr_interface/data_buf[124]"/>
-        <net name="Inst_wr_interface/data_buf[123]"/>
-        <net name="Inst_wr_interface/data_buf[122]"/>
-        <net name="Inst_wr_interface/data_buf[121]"/>
-        <net name="Inst_wr_interface/data_buf[120]"/>
-        <net name="Inst_wr_interface/data_buf[119]"/>
-        <net name="Inst_wr_interface/data_buf[118]"/>
-        <net name="Inst_wr_interface/data_buf[117]"/>
-        <net name="Inst_wr_interface/data_buf[116]"/>
-        <net name="Inst_wr_interface/data_buf[115]"/>
-        <net name="Inst_wr_interface/data_buf[114]"/>
-        <net name="Inst_wr_interface/data_buf[113]"/>
-        <net name="Inst_wr_interface/data_buf[112]"/>
-        <net name="Inst_wr_interface/data_buf[111]"/>
-        <net name="Inst_wr_interface/data_buf[110]"/>
-        <net name="Inst_wr_interface/data_buf[109]"/>
-        <net name="Inst_wr_interface/data_buf[108]"/>
-        <net name="Inst_wr_interface/data_buf[107]"/>
-        <net name="Inst_wr_interface/data_buf[106]"/>
-        <net name="Inst_wr_interface/data_buf[105]"/>
-        <net name="Inst_wr_interface/data_buf[104]"/>
-        <net name="Inst_wr_interface/data_buf[103]"/>
-        <net name="Inst_wr_interface/data_buf[102]"/>
-        <net name="Inst_wr_interface/data_buf[101]"/>
-        <net name="Inst_wr_interface/data_buf[100]"/>
-        <net name="Inst_wr_interface/data_buf[99]"/>
-        <net name="Inst_wr_interface/data_buf[98]"/>
-        <net name="Inst_wr_interface/data_buf[97]"/>
-        <net name="Inst_wr_interface/data_buf[96]"/>
-        <net name="Inst_wr_interface/data_buf[95]"/>
-        <net name="Inst_wr_interface/data_buf[94]"/>
-        <net name="Inst_wr_interface/data_buf[93]"/>
-        <net name="Inst_wr_interface/data_buf[92]"/>
-        <net name="Inst_wr_interface/data_buf[91]"/>
-        <net name="Inst_wr_interface/data_buf[90]"/>
-        <net name="Inst_wr_interface/data_buf[89]"/>
-        <net name="Inst_wr_interface/data_buf[88]"/>
-        <net name="Inst_wr_interface/data_buf[87]"/>
-        <net name="Inst_wr_interface/data_buf[86]"/>
-        <net name="Inst_wr_interface/data_buf[85]"/>
-        <net name="Inst_wr_interface/data_buf[84]"/>
-        <net name="Inst_wr_interface/data_buf[83]"/>
-        <net name="Inst_wr_interface/data_buf[82]"/>
-        <net name="Inst_wr_interface/data_buf[81]"/>
-        <net name="Inst_wr_interface/data_buf[80]"/>
-        <net name="Inst_wr_interface/data_buf[79]"/>
-        <net name="Inst_wr_interface/data_buf[78]"/>
-        <net name="Inst_wr_interface/data_buf[77]"/>
-        <net name="Inst_wr_interface/data_buf[76]"/>
-        <net name="Inst_wr_interface/data_buf[75]"/>
-        <net name="Inst_wr_interface/data_buf[74]"/>
-        <net name="Inst_wr_interface/data_buf[73]"/>
-        <net name="Inst_wr_interface/data_buf[72]"/>
-        <net name="Inst_wr_interface/data_buf[71]"/>
-        <net name="Inst_wr_interface/data_buf[70]"/>
-        <net name="Inst_wr_interface/data_buf[69]"/>
-        <net name="Inst_wr_interface/data_buf[68]"/>
-        <net name="Inst_wr_interface/data_buf[67]"/>
-        <net name="Inst_wr_interface/data_buf[66]"/>
-        <net name="Inst_wr_interface/data_buf[65]"/>
-        <net name="Inst_wr_interface/data_buf[64]"/>
-        <net name="Inst_wr_interface/data_buf[63]"/>
-        <net name="Inst_wr_interface/data_buf[62]"/>
-        <net name="Inst_wr_interface/data_buf[61]"/>
-        <net name="Inst_wr_interface/data_buf[60]"/>
-        <net name="Inst_wr_interface/data_buf[59]"/>
-        <net name="Inst_wr_interface/data_buf[58]"/>
-        <net name="Inst_wr_interface/data_buf[57]"/>
-        <net name="Inst_wr_interface/data_buf[56]"/>
-        <net name="Inst_wr_interface/data_buf[55]"/>
-        <net name="Inst_wr_interface/data_buf[54]"/>
-        <net name="Inst_wr_interface/data_buf[53]"/>
-        <net name="Inst_wr_interface/data_buf[52]"/>
-        <net name="Inst_wr_interface/data_buf[51]"/>
-        <net name="Inst_wr_interface/data_buf[50]"/>
-        <net name="Inst_wr_interface/data_buf[49]"/>
-        <net name="Inst_wr_interface/data_buf[48]"/>
-        <net name="Inst_wr_interface/data_buf[47]"/>
-        <net name="Inst_wr_interface/data_buf[46]"/>
-        <net name="Inst_wr_interface/data_buf[45]"/>
-        <net name="Inst_wr_interface/data_buf[44]"/>
-        <net name="Inst_wr_interface/data_buf[43]"/>
-        <net name="Inst_wr_interface/data_buf[42]"/>
-        <net name="Inst_wr_interface/data_buf[41]"/>
-        <net name="Inst_wr_interface/data_buf[40]"/>
-        <net name="Inst_wr_interface/data_buf[39]"/>
-        <net name="Inst_wr_interface/data_buf[38]"/>
-        <net name="Inst_wr_interface/data_buf[37]"/>
-        <net name="Inst_wr_interface/data_buf[36]"/>
-        <net name="Inst_wr_interface/data_buf[35]"/>
-        <net name="Inst_wr_interface/data_buf[34]"/>
-        <net name="Inst_wr_interface/data_buf[33]"/>
-        <net name="Inst_wr_interface/data_buf[32]"/>
-        <net name="Inst_wr_interface/data_buf[31]"/>
-        <net name="Inst_wr_interface/data_buf[30]"/>
-        <net name="Inst_wr_interface/data_buf[29]"/>
-        <net name="Inst_wr_interface/data_buf[28]"/>
-        <net name="Inst_wr_interface/data_buf[27]"/>
-        <net name="Inst_wr_interface/data_buf[26]"/>
-        <net name="Inst_wr_interface/data_buf[25]"/>
-        <net name="Inst_wr_interface/data_buf[24]"/>
-        <net name="Inst_wr_interface/data_buf[23]"/>
-        <net name="Inst_wr_interface/data_buf[22]"/>
-        <net name="Inst_wr_interface/data_buf[21]"/>
-        <net name="Inst_wr_interface/data_buf[20]"/>
-        <net name="Inst_wr_interface/data_buf[19]"/>
-        <net name="Inst_wr_interface/data_buf[18]"/>
-        <net name="Inst_wr_interface/data_buf[17]"/>
-        <net name="Inst_wr_interface/data_buf[16]"/>
-        <net name="Inst_wr_interface/data_buf[15]"/>
-        <net name="Inst_wr_interface/data_buf[14]"/>
-        <net name="Inst_wr_interface/data_buf[13]"/>
-        <net name="Inst_wr_interface/data_buf[12]"/>
-        <net name="Inst_wr_interface/data_buf[11]"/>
-        <net name="Inst_wr_interface/data_buf[10]"/>
-        <net name="Inst_wr_interface/data_buf[9]"/>
-        <net name="Inst_wr_interface/data_buf[8]"/>
-        <net name="Inst_wr_interface/data_buf[7]"/>
-        <net name="Inst_wr_interface/data_buf[6]"/>
-        <net name="Inst_wr_interface/data_buf[5]"/>
-        <net name="Inst_wr_interface/data_buf[4]"/>
-        <net name="Inst_wr_interface/data_buf[3]"/>
-        <net name="Inst_wr_interface/data_buf[2]"/>
-        <net name="Inst_wr_interface/data_buf[1]"/>
-        <net name="Inst_wr_interface/data_buf[0]"/>
+        <net name="Inst_wr_interface/data_buf[1][7]"/>
+        <net name="Inst_wr_interface/data_buf[1][6]"/>
+        <net name="Inst_wr_interface/data_buf[1][5]"/>
+        <net name="Inst_wr_interface/data_buf[1][4]"/>
+        <net name="Inst_wr_interface/data_buf[1][3]"/>
+        <net name="Inst_wr_interface/data_buf[1][2]"/>
+        <net name="Inst_wr_interface/data_buf[1][1]"/>
+        <net name="Inst_wr_interface/data_buf[1][0]"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:2"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
         <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
         <Option Id="PROBE_PORT" value="6"/>
         <Option Id="PROBE_PORT_BITS" value="0"/>
-        <Option Id="PROBE_PORT_BIT_COUNT" value="80"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="8"/>
       </probeOptions>
       <nets>
-        <net name="Inst_wr_interface/data_send[79]"/>
-        <net name="Inst_wr_interface/data_send[78]"/>
-        <net name="Inst_wr_interface/data_send[77]"/>
-        <net name="Inst_wr_interface/data_send[76]"/>
-        <net name="Inst_wr_interface/data_send[75]"/>
-        <net name="Inst_wr_interface/data_send[74]"/>
-        <net name="Inst_wr_interface/data_send[73]"/>
-        <net name="Inst_wr_interface/data_send[72]"/>
-        <net name="Inst_wr_interface/data_send[71]"/>
-        <net name="Inst_wr_interface/data_send[70]"/>
-        <net name="Inst_wr_interface/data_send[69]"/>
-        <net name="Inst_wr_interface/data_send[68]"/>
-        <net name="Inst_wr_interface/data_send[67]"/>
-        <net name="Inst_wr_interface/data_send[66]"/>
-        <net name="Inst_wr_interface/data_send[65]"/>
-        <net name="Inst_wr_interface/data_send[64]"/>
-        <net name="Inst_wr_interface/data_send[63]"/>
-        <net name="Inst_wr_interface/data_send[62]"/>
-        <net name="Inst_wr_interface/data_send[61]"/>
-        <net name="Inst_wr_interface/data_send[60]"/>
-        <net name="Inst_wr_interface/data_send[59]"/>
-        <net name="Inst_wr_interface/data_send[58]"/>
-        <net name="Inst_wr_interface/data_send[57]"/>
-        <net name="Inst_wr_interface/data_send[56]"/>
-        <net name="Inst_wr_interface/data_send[55]"/>
-        <net name="Inst_wr_interface/data_send[54]"/>
-        <net name="Inst_wr_interface/data_send[53]"/>
-        <net name="Inst_wr_interface/data_send[52]"/>
-        <net name="Inst_wr_interface/data_send[51]"/>
-        <net name="Inst_wr_interface/data_send[50]"/>
-        <net name="Inst_wr_interface/data_send[49]"/>
-        <net name="Inst_wr_interface/data_send[48]"/>
-        <net name="Inst_wr_interface/data_send[47]"/>
-        <net name="Inst_wr_interface/data_send[46]"/>
-        <net name="Inst_wr_interface/data_send[45]"/>
-        <net name="Inst_wr_interface/data_send[44]"/>
-        <net name="Inst_wr_interface/data_send[43]"/>
-        <net name="Inst_wr_interface/data_send[42]"/>
-        <net name="Inst_wr_interface/data_send[41]"/>
-        <net name="Inst_wr_interface/data_send[40]"/>
-        <net name="Inst_wr_interface/data_send[39]"/>
-        <net name="Inst_wr_interface/data_send[38]"/>
-        <net name="Inst_wr_interface/data_send[37]"/>
-        <net name="Inst_wr_interface/data_send[36]"/>
-        <net name="Inst_wr_interface/data_send[35]"/>
-        <net name="Inst_wr_interface/data_send[34]"/>
-        <net name="Inst_wr_interface/data_send[33]"/>
-        <net name="Inst_wr_interface/data_send[32]"/>
-        <net name="Inst_wr_interface/data_send[31]"/>
-        <net name="Inst_wr_interface/data_send[30]"/>
-        <net name="Inst_wr_interface/data_send[29]"/>
-        <net name="Inst_wr_interface/data_send[28]"/>
-        <net name="Inst_wr_interface/data_send[27]"/>
-        <net name="Inst_wr_interface/data_send[26]"/>
-        <net name="Inst_wr_interface/data_send[25]"/>
-        <net name="Inst_wr_interface/data_send[24]"/>
-        <net name="Inst_wr_interface/data_send[23]"/>
-        <net name="Inst_wr_interface/data_send[22]"/>
-        <net name="Inst_wr_interface/data_send[21]"/>
-        <net name="Inst_wr_interface/data_send[20]"/>
-        <net name="Inst_wr_interface/data_send[19]"/>
-        <net name="Inst_wr_interface/data_send[18]"/>
-        <net name="Inst_wr_interface/data_send[17]"/>
-        <net name="Inst_wr_interface/data_send[16]"/>
-        <net name="Inst_wr_interface/data_send[15]"/>
-        <net name="Inst_wr_interface/data_send[14]"/>
-        <net name="Inst_wr_interface/data_send[13]"/>
-        <net name="Inst_wr_interface/data_send[12]"/>
-        <net name="Inst_wr_interface/data_send[11]"/>
-        <net name="Inst_wr_interface/data_send[10]"/>
-        <net name="Inst_wr_interface/data_send[9]"/>
-        <net name="Inst_wr_interface/data_send[8]"/>
-        <net name="Inst_wr_interface/data_send[7]"/>
-        <net name="Inst_wr_interface/data_send[6]"/>
-        <net name="Inst_wr_interface/data_send[5]"/>
-        <net name="Inst_wr_interface/data_send[4]"/>
-        <net name="Inst_wr_interface/data_send[3]"/>
-        <net name="Inst_wr_interface/data_send[2]"/>
-        <net name="Inst_wr_interface/data_send[1]"/>
-        <net name="Inst_wr_interface/data_send[0]"/>
+        <net name="Inst_wr_interface/data_buf[2][7]"/>
+        <net name="Inst_wr_interface/data_buf[2][6]"/>
+        <net name="Inst_wr_interface/data_buf[2][5]"/>
+        <net name="Inst_wr_interface/data_buf[2][4]"/>
+        <net name="Inst_wr_interface/data_buf[2][3]"/>
+        <net name="Inst_wr_interface/data_buf[2][2]"/>
+        <net name="Inst_wr_interface/data_buf[2][1]"/>
+        <net name="Inst_wr_interface/data_buf[2][0]"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:2"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
         <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
         <Option Id="PROBE_PORT" value="7"/>
         <Option Id="PROBE_PORT_BITS" value="0"/>
-        <Option Id="PROBE_PORT_BIT_COUNT" value="4"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="8"/>
       </probeOptions>
       <nets>
-        <net name="Inst_wr_interface/debug_fsm[3]"/>
-        <net name="Inst_wr_interface/debug_fsm[2]"/>
-        <net name="Inst_wr_interface/debug_fsm[1]"/>
-        <net name="Inst_wr_interface/debug_fsm[0]"/>
+        <net name="Inst_wr_interface/data_buf[3][7]"/>
+        <net name="Inst_wr_interface/data_buf[3][6]"/>
+        <net name="Inst_wr_interface/data_buf[3][5]"/>
+        <net name="Inst_wr_interface/data_buf[3][4]"/>
+        <net name="Inst_wr_interface/data_buf[3][3]"/>
+        <net name="Inst_wr_interface/data_buf[3][2]"/>
+        <net name="Inst_wr_interface/data_buf[3][1]"/>
+        <net name="Inst_wr_interface/data_buf[3][0]"/>
       </nets>
     </probe>
     <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
-        <Option Id="CORE_LOCATION" value="1:2"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
         <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
         <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
@@ -2101,6 +2023,70 @@
       </probeOptions>
       <nets>
         <net name="Inst_wr_interface/pack_probe"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
+        <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
+        <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
+        <Option Id="PROBE_PORT" value="9"/>
+        <Option Id="PROBE_PORT_BITS" value="0"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="8"/>
+      </probeOptions>
+      <nets>
+        <net name="Inst_wr_interface/data_buf[4][7]"/>
+        <net name="Inst_wr_interface/data_buf[4][6]"/>
+        <net name="Inst_wr_interface/data_buf[4][5]"/>
+        <net name="Inst_wr_interface/data_buf[4][4]"/>
+        <net name="Inst_wr_interface/data_buf[4][3]"/>
+        <net name="Inst_wr_interface/data_buf[4][2]"/>
+        <net name="Inst_wr_interface/data_buf[4][1]"/>
+        <net name="Inst_wr_interface/data_buf[4][0]"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
+        <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
+        <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
+        <Option Id="PROBE_PORT" value="10"/>
+        <Option Id="PROBE_PORT_BITS" value="0"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="10"/>
+      </probeOptions>
+      <nets>
+        <net name="Inst_wr_interface/len_std[9]"/>
+        <net name="Inst_wr_interface/len_std[8]"/>
+        <net name="Inst_wr_interface/len_std[7]"/>
+        <net name="Inst_wr_interface/len_std[6]"/>
+        <net name="Inst_wr_interface/len_std[5]"/>
+        <net name="Inst_wr_interface/len_std[4]"/>
+        <net name="Inst_wr_interface/len_std[3]"/>
+        <net name="Inst_wr_interface/len_std[2]"/>
+        <net name="Inst_wr_interface/len_std[1]"/>
+        <net name="Inst_wr_interface/len_std[0]"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:3"/>
+        <Option Id="CORE_UUID" value="baf646382978525fa9e8e3ff96d55841"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value=""/>
+        <Option Id="HW_ILA" value="Inst_wr_interface/i_ila"/>
+        <Option Id="PROBE_PORT" value="11"/>
+        <Option Id="PROBE_PORT_BITS" value="0"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="4"/>
+      </probeOptions>
+      <nets>
+        <net name="Inst_wr_interface/state[3]"/>
+        <net name="Inst_wr_interface/state[2]"/>
+        <net name="Inst_wr_interface/state[1]"/>
+        <net name="Inst_wr_interface/state[0]"/>
       </nets>
     </probe>
   </probeset>

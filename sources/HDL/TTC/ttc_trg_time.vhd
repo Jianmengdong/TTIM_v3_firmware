@@ -34,6 +34,7 @@ entity ttc_trg_time is
     trig_rate_o : out std_logic_vector(23 downto 0);
     local_time_i    : in  std_logic_vector(47 downto 0);
     local_trigger_i : in  std_logic;
+    trig_type_i : in std_logic_vector(7 downto 0);
     chb_grant_i     : in  std_logic;
     chb_req_o       : out std_logic;
     ttc_long_o      : out t_ttc_long_frame;
@@ -75,6 +76,7 @@ architecture  rtl of ttc_trg_time is
   signal rd_en,full,empty,valid : std_logic;
     signal trig_rate : unsigned(23 downto 0);
     signal pps_r,pps_r2 : std_logic;
+    signal trigger_type : std_logic_vector(7 downto 0);
   --attribute dont_touch : string;
   --attribute mark_debug : string;
   --attribute dont_touch of s_trg_timestamp : signal is "true";
@@ -97,6 +99,10 @@ begin  -- architecture  rtl
       sig_i => local_trigger_i,
       sig_o => s_local_trigger_pulse
       );
+   process(clk_i)
+   begin
+    trigger_type <= trig_type_i;
+   end process;
 -------------------------------------------------------------------------------
 -- test debug
 -------------------------------------------------------------------------------
@@ -131,7 +137,7 @@ begin  -- architecture  rtl
 Inst_trigger_fifo :entity work.fifo_generator_0
   PORT MAP (
     clk => clk_i,
-    din => local_time_i,
+    din => trigger_type&local_time_i(39 downto 0),
     wr_en => s_local_trigger_pulse,
     rd_en => rd_en,
     dout => dout,

@@ -22,6 +22,7 @@ entity remote_update_top is
     outSFPStatus : out std_logic_vector(8 downto 0);
     outSFPError : out std_logic_vector(5 downto 0);
     inUpdateControl : in std_logic_vector(19 downto 0) := x"00000";
+    end_of_update : in std_logic;
     re_load : in std_logic;
     mosi : out std_logic;
     miso : out std_logic;
@@ -53,6 +54,7 @@ iSpiFlashProgrammer:entity work.SpiFlashProgrammer
     inVerify              => inUpdateControl(2),
     inChangeModeOnly      => inUpdateControl(3),
     inModeRegister        => inUpdateControl(19 downto 4),
+    end_of_update => end_of_update,
     inData32              => intSFPData32, --data to write
     inDataWriteEnable     => intSFPDataValid, 
     outFifoRdEn           => intSFPFifoRdEn,
