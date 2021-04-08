@@ -88,7 +88,7 @@ end TTIM_v3_top;
 architecture Behavioral of TTIM_v3_top is
 
     constant hw_version : std_logic_vector(15 downto 0) := x"0300"; --major[7:4] minor[3:0]
-    constant fw_version : std_logic_vector(15 downto 0) := x"FFFF"; --major[7:4] minor[3:0]
+    constant fw_version : std_logic_vector(15 downto 0) := x"0203"; --major[7:4] minor[3:0]
                                                                     --x"FFFF" for golden image
     
     signal pps_i : std_logic;
